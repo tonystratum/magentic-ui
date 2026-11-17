@@ -30,6 +30,7 @@ USER_ID = "guestuser@gmail.com"  # frontend's DEFAULT_USER_ID, so runs show in t
 WS_PROTOCOL_TAG = "magui.auth.bearer"
 LOG = Path(__file__).resolve().parent / "runs" / "fara.jsonl"
 DONE = {"complete", "error", "stopped", "disconnected"}
+BUSY = {"active", "awaiting_input", "paused", "starting"}
 CHANNEL = "notifications/claude/channel"
 
 mcp = MCPServer(
@@ -78,7 +79,7 @@ async def _get_token(refresh: bool = False) -> str:
     return _token
 
 
-async def _api(method: str, path: str, body: dict[str, Any]) -> dict[str, Any]:
+async def _api(method: str, path: str, body: dict[str, Any] | None = None) -> dict[str, Any]:
     for refresh in (False, True):
         headers = {"Authorization": f"Bearer {await _get_token(refresh)}"}
         async with httpx.AsyncClient(timeout=30) as c:
@@ -143,7 +144,10 @@ def _push(run: Run) -> None:
     """Report to Claude Code unprompted. Dropped silently by Claude Code unless loaded as a channel."""
     if _outbound is not None:
         # Don't consume: without the channel flag Claude Code drops this, and fara_status must still show the steps.
-        params = {"content": _report(run, consume=False), "meta": {"session_id": str(run.session_id), "status": run.status}}
+        params = {
+            "content": _report(run, consume=False),
+            "meta": {"session_id": str(run.session_id), "status": run.status},
+        }
         asyncio.create_task(_send_channel(params))
 
 
@@ -198,9 +202,15 @@ async def _listen(run: Run) -> None:
 
 async def _connect(run: Run) -> None:
     url = BASE.replace("http", "ws", 1) + f"/api/ws/runs/{run.run_id}"
-    run.ws = await websockets.connect(
-        url, subprotocols=[WS_PROTOCOL_TAG, await _get_token()], max_size=None
-    )
+    for refresh in (False, True):  # a restarted backend has a new token and refuses the old one with 403
+        try:
+            run.ws = await websockets.connect(
+                url, subprotocols=[WS_PROTOCOL_TAG, await _get_token(refresh)], max_size=None
+            )
+            break
+        except websockets.InvalidStatus:
+            if refresh:
+                raise
     asyncio.create_task(_listen(run))
 
 
@@ -221,13 +231,20 @@ async def fara_start(ctx: Context, task: str, session_id: int | None = None) -> 
         sess = await _api("POST", "/sessions/", {"user_id": USER_ID, "name": task[:80]})
         session_id = sess["data"]["id"]
     run = RUNS.get(session_id)
-    if run and run.status in ("active", "awaiting_input", "paused", "starting"):
+    if run and run.status in BUSY:
         return f"session {session_id} is busy (status {run.status}); use fara_status / fara_respond / fara_stop"
     if run is None:
         r = await _api("POST", "/runs/", {"session_id": session_id, "user_id": USER_ID})
         run = RUNS[session_id] = Run(session_id=session_id, run_id=int(r["data"]["run_id"]))
     if run.ws is None:
         await _connect(run)
+        # A dropped socket or an earlier MCP process can leave a task running that this process doesn't know;
+        # a new start would make the backend cancel it. Track it instead.
+        backend_status = (await _api("GET", f"/runs/{run.run_id}"))["data"]["status"]
+        if backend_status in BUSY:
+            run.status = backend_status
+            run.started = run.started or time.time()  # adopted run: time since we attached
+            return f"session {session_id} is still running an earlier task (status {backend_status}); follow it with fara_status"
     run.task, run.answer, run.pending, run.error = task, None, None, None
     run.steps, run.seen, run.started = [], 0, time.time()
     run.status = "starting"

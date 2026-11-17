@@ -38,7 +38,8 @@ user ──tasks, approvals──▶ Claude ──task text──▶ fara_mcp.py
 
 ## Backend protocol (as used)
 
-- REST under `/api`, auth `Authorization: Bearer <token>`; token is per server process, embedded in `index.html` as `window.__MAGUI_TOKEN__` (MCP refetches on 401).
+- REST under `/api`, auth `Authorization: Bearer <token>`; token is per server process, embedded in `index.html` as `window.__MAGUI_TOKEN__` (MCP refetches on a REST 401 or a websocket 403, e.g. after a backend restart).
+- Before reattaching to a run (after a dropped socket or an MCP restart), the MCP reads `GET /api/runs/{id}`: if a task is still active there, `fara_start` follows it instead of sending a new start, which the backend would answer by cancelling the old task after 30 s.
 - `POST /api/sessions/ {user_id, name}` → session id; `POST /api/runs/ {session_id, user_id}` → run id (one run per session, reused by follow-ups).
 - Websocket `/api/ws/runs/{run_id}`, subprotocols `["magui.auth.bearer", token]`. Send `{"type":"start","task":"{\"content\":…}","settings_config":{}}`, `input_response`, `approval_response`, `continuation_response`, `stop`.
 - Receive `system` (status: active / awaiting_input / complete / error / stopped), `input_request`, `message` with `metadata.type` tool_call / browser_screenshot / final_answer / error.
