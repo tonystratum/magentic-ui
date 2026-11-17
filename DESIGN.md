@@ -51,7 +51,7 @@ user ──tasks, approvals──▶ Claude ──task text──▶ fara_mcp.py
 - llama.cpp: `Fara1.5-4B-Q4_K_L.gguf`, multimodal, `n_ctx` 65536, **1 slot**. Honors `chat_template_kwargs.enable_thinking=false`, which the Fara loop always sends; without it the output goes to `reasoning_content` and `content` is empty.
 - MagenticLite 0.2.2 from this fork, installed editable in `.venv` (`uv sync`), frontend built into `src/magentic_ui/backend/web/ui/` (gitignored; Node ≥24, pnpm 10); start: `.venv/bin/magentic-ui --port 8081 --config config.yaml`. First start downloads the Quicksand Ubuntu image (308 MB). VM: 6 G RAM, 3 CPUs, 5 browser slots. `/dev/kvm` is accessible.
 - Parallel sessions run, but llama.cpp has 1 slot, so model calls queue: 3 concurrent tasks worked, each slower.
-- Fara's start page is Bing.
+- Fara's start page and search engine are Google (`_fara_qwen3.py`: `DEFAULT_START_PAGE`, `web_search`, `visit_url` with spaces); upstream used Bing.
 - `mcp` 2.x renamed FastMCP → `MCPServer` (`mcp.server.mcpserver`); the client API is unchanged.
 
 ## Setup (new machine)

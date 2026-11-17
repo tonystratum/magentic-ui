@@ -880,7 +880,7 @@ class TestExecuteAction:
             env, {"action": "visit_url", "url": "python tutorial"}
         )
         call_url = env.goto.call_args[0][0]
-        assert "bing.com/search" in call_url
+        assert "google.com/search" in call_url
         assert "python+tutorial" in call_url
 
     @pytest.mark.asyncio
@@ -897,7 +897,7 @@ class TestExecuteAction:
             env, {"action": "web_search", "query": "pytest docs"}
         )
         call_url = env.goto.call_args[0][0]
-        assert "bing.com/search" in call_url
+        assert "google.com/search" in call_url
         assert "pytest+docs" in call_url
 
     @pytest.mark.asyncio

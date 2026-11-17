@@ -130,7 +130,7 @@ class FaraQwen3Agent:
     """
 
     # Class constants
-    DEFAULT_START_PAGE = "https://www.bing.com/"
+    DEFAULT_START_PAGE = "https://www.google.com/"
     DISPLAY_SIZE = 1000
     PATCH_SIZE = 16
     MERGE_SIZE = 2
@@ -644,7 +644,7 @@ class FaraQwen3Agent:
                 await env.goto(url)
             elif " " in url:
                 await env.goto(
-                    f"https://www.bing.com/search?q={quote_plus(url)}&FORM=QBLH"
+                    f"https://www.google.com/search?q={quote_plus(url)}"
                 )
             else:
                 await env.goto("https://" + url)
@@ -657,7 +657,7 @@ class FaraQwen3Agent:
             query = str(args.get("query", ""))
             description = f"I typed '{query}' into the browser search bar."
             encoded_query = quote_plus(query)
-            await env.goto(f"https://www.bing.com/search?q={encoded_query}&FORM=QBLH")
+            await env.goto(f"https://www.google.com/search?q={encoded_query}")
 
         elif action_type == "scroll":
             pixels = int(args.get("pixels", 0))
