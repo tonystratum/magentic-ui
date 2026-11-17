@@ -71,6 +71,9 @@
   --status-completed: #6c6c70;
   --status-waiting-input: #c93400;
 
+  /* Selected segment of a segmented control (Tabs) */
+  --segment-active: #ffffff;
+
   /* Extended Tokens */
   --accent-0: var(--color-neutral-100);
   --accent-2: var(--color-neutral-300);
@@ -156,6 +159,9 @@
   --status-active: #30d158;
   --status-completed: #aeaeb2;
   --status-waiting-input: #ff9f0a;
+
+  /* Selected segment of a segmented control (Tabs) */
+  --segment-active: #636366;
 
   /* Extended Tokens */
   --accent-0: var(--color-neutral-900);
@@ -250,6 +256,7 @@
   --color-status-active: var(--status-active);
   --color-status-completed: var(--status-completed);
   --color-status-waiting-input: var(--status-waiting-input);
+  --color-segment-active: var(--segment-active);
 }
 
 /* =============================================================================

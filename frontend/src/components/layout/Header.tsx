@@ -47,7 +47,6 @@ export function Header({
 
   const AppTitle = (
     <div className="flex shrink-0 items-center gap-2">
-      <img src="/magentic-logo.svg" alt="MagenticLite" className="h-6 w-auto" />
       <span className="text-foreground text-base leading-none tracking-tight">
         <span className="font-bold">Magentic</span>
         <span className="font-light">Lite</span>

@@ -12,7 +12,7 @@ const Checkbox = React.forwardRef<
     ref={ref}
     className={cn(
       // [customized] cursor-pointer so the affordance reads as clickable
-      'peer border-primary focus-visible:ring-ring data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground grid h-4 w-4 shrink-0 cursor-pointer place-content-center rounded-sm border shadow focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+      'peer border-input focus-visible:ring-ring data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground grid h-4 w-4 shrink-0 cursor-pointer place-content-center rounded-[5px] border focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
       className
     )}
     {...props}
