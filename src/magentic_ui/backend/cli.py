@@ -1,4 +1,5 @@
 import os
+import subprocess
 import warnings
 import typer
 import uvicorn
@@ -80,6 +81,11 @@ def main(
         "--reset-config",
         help="Clear saved model config so onboarding runs again.",
     ),
+    tunnel: bool = typer.Option(
+        False,
+        "--tunnel",
+        help="Also start a cloudflared quick tunnel to the UI (needs cloudflared on PATH).",
+    ),
 ):
     """
     MagenticLite: A human-centered interface for web agents.
@@ -105,6 +111,7 @@ def main(
             config=config,
             fara_agent=fara_agent,
             reset_config=reset_config,
+            tunnel=tunnel,
         )
 
 
@@ -119,6 +126,7 @@ def run_ui(
     config: Optional[str],
     fara_agent: bool,
     reset_config: bool = False,
+    tunnel: bool = False,
 ):
     """
     Core logic to run the Magentic-UI web application.
@@ -167,17 +175,36 @@ def run_ui(
         for key, value in env_vars.items():
             temp_env.write(f"{key}={value}\n")
 
-    # Start the Uvicorn server with the configured settings
-    uvicorn.run(
-        "magentic_ui.backend.web.app:app",  # Path to the ASGI application
-        host=host,
-        port=port,
-        reload=reload,
-        reload_excludes=["**/alembic/*", "**/alembic.ini", "**/versions/*"]
-        if reload
-        else None,
-        env_file=env_file_path,  # Pass environment variables via file
+    # The backend rejects other Host headers with 400, hence --http-host-header.
+    tunnel_proc = (
+        subprocess.Popen(
+            [
+                "cloudflared",
+                "tunnel",
+                "--url",
+                f"http://localhost:{port}",
+                "--http-host-header",
+                "localhost",
+            ]
+        )
+        if tunnel
+        else None
     )
+    try:
+        # Start the Uvicorn server with the configured settings
+        uvicorn.run(
+            "magentic_ui.backend.web.app:app",  # Path to the ASGI application
+            host=host,
+            port=port,
+            reload=reload,
+            reload_excludes=["**/alembic/*", "**/alembic.ini", "**/versions/*"]
+            if reload
+            else None,
+            env_file=env_file_path,  # Pass environment variables via file
+        )
+    finally:
+        if tunnel_proc:
+            tunnel_proc.terminate()
 
 
 # This command is hidden from help to encourage using the new syntax
