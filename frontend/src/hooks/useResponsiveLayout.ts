@@ -22,7 +22,8 @@ interface ResponsiveLayoutState {
 }
 
 export function useResponsiveLayout(): ResponsiveLayoutState {
-  const sidebarOpen = useUIStore((s) => s.sidebarOpen)
+  // The sidebar only takes width in the normal layout
+  const sidebarOpen = useUIStore((s) => s.sidebarOpen && s.sessionLayout === 'normal')
 
   // Allow sidebar when window >= SIDEBAR + CHAT_MIN
   const allowSidebar = useMediaQuery(

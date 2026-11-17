@@ -35,8 +35,8 @@ export function Sidebar({
     }
 
     return (
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="flex flex-col gap-3">
+      <div className="flex-1 overflow-y-auto p-2">
+        <div className="flex flex-col gap-0.5">
           {sessions.map((session) => (
             <SessionCard
               key={session.id}
@@ -60,7 +60,7 @@ export function Sidebar({
     <>
       <aside
         aria-label="Session history"
-        className="border-sidebar-border bg-sidebar flex h-full w-[340px] shrink-0 flex-col border-r"
+        className="border-sidebar-border bg-sidebar flex h-full w-[264px] shrink-0 flex-col border-r"
       >
         {renderContent()}
       </aside>

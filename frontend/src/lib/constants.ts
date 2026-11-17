@@ -172,13 +172,16 @@ export const MAX_CONTENT_BLOCK_HEIGHT = 300
  */
 export const LAYOUT_WIDTHS = {
   /** Sidebar width in pixels */
-  SIDEBAR: 340,
+  SIDEBAR: 264,
 
   /** Minimum chat width when NOT in side-by-side mode */
   CHAT_MIN: 480,
 
   /** Maximum chat width in side-by-side mode (then extra space goes to browser) */
   CHAT_MAX: 960,
+
+  /** Chat rail width in the browser-first layout */
+  CHAT_RAIL: 380,
 
   /** Minimum combined width for side-by-side (chat + browser, each 480px) */
   SIDE_BY_SIDE_MIN: 960,

@@ -67,12 +67,16 @@ export function SessionCard({
       role="button"
       tabIndex={0}
       className={cn(
-        'group flex flex-col gap-3 p-4 transition-colors',
+        'group flex flex-col transition-colors',
         'hover:bg-card-hover cursor-pointer',
         // Dashboard: push status to bottom
-        variant === 'dashboard' && 'justify-between',
-        // Selected state
-        selected && 'border-primary shadow-[0_0_0_3px_var(--card-selected-ring)]',
+        variant === 'dashboard' && 'justify-between gap-3 p-4',
+        // Sidebar: compact HIG list row, selection shown as a filled row
+        variant === 'sidebar' && 'gap-1 border-transparent bg-transparent px-3 py-2 shadow-none',
+        selected && variant === 'sidebar' && 'bg-sidebar-accent',
+        selected &&
+          variant === 'dashboard' &&
+          'border-primary shadow-[0_0_0_3px_var(--card-selected-ring)]',
         // Focus state for keyboard navigation
         'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none'
       )}
@@ -85,7 +89,12 @@ export function SessionCard({
       }}
     >
       {/* Title */}
-      <h3 className={cn('text-foreground line-clamp-2 text-lg leading-[22px] font-bold')}>
+      <h3
+        className={cn(
+          'text-foreground font-bold',
+          variant === 'sidebar' ? 'truncate text-sm' : 'line-clamp-2 text-lg leading-[22px]'
+        )}
+      >
         {title}
       </h3>
 

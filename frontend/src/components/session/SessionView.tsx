@@ -2,6 +2,7 @@ import { useReducer, useEffect, useMemo, useCallback, useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { ErrorBoundary } from '@/components/common'
 import { Sidebar } from './Sidebar'
+import { SessionTabs } from './SessionTabs'
 import { ChatView } from '@/components/chat'
 import { BrowserExpanded } from '@/components/browser'
 import { FileExpanded } from '@/components/file'
@@ -11,6 +12,7 @@ import {
   useNovncPassword,
   useChatStore,
   useSessionMessages,
+  useUIStore,
 } from '@/stores'
 import { useResponsiveLayout } from '@/hooks'
 import { useSessionPlayback } from '@/hooks/useSessionPlayback'
@@ -114,6 +116,7 @@ export function SessionView({
 
   const browserViewMode = useBrowserViewMode(numericSessionId)
   const novncUrl = useNovncUrl(numericSessionId)
+  const browserFirst = useUIStore((s) => s.sessionLayout) === 'browser'
   const novncPassword = useNovncPassword(numericSessionId)
   const setBrowserViewMode = useChatStore((s) => s.setBrowserViewMode)
 
@@ -497,16 +500,35 @@ export function SessionView({
   const showFilePanel = !!previewFile
   // Either panel can hide chat in maximized mode
   const hideChatInMaximized = browserViewMode === 'maximized' || (showFilePanel && fileMaximized)
+  // Browser-first layout: the browser sits left of a narrow chat rail
+  const browserLeft = browserFirst && (showBrowserPanel || showFilePanel) && !hideChatInMaximized
+
+  // Browser-first layout always shows the browser panel once there is something to show
+  useEffect(() => {
+    if (!numericSessionId || !browserFirst || previewFile) return
+    if (browserViewMode === 'embedded' && (novncUrl || hasScreenshots)) {
+      setBrowserViewMode(numericSessionId, allowSideBySide ? 'expanded' : 'maximized')
+    }
+  }, [
+    numericSessionId,
+    browserFirst,
+    previewFile,
+    browserViewMode,
+    novncUrl,
+    hasScreenshots,
+    allowSideBySide,
+    setBrowserViewMode,
+  ])
 
   return (
     <div className={cn('flex h-full w-full', className)}>
       {/* Sidebar */}
-      {showSidebar && (
+      {showSidebar && !browserFirst && (
         <ErrorBoundary>
           {isLoading ? (
             <aside
               aria-label="Session history"
-              className="border-sidebar-border bg-sidebar flex h-full w-[340px] shrink-0 flex-col border-r"
+              className="border-sidebar-border bg-sidebar flex h-full w-[264px] shrink-0 flex-col border-r"
             >
               <div className="flex flex-1 items-center justify-center">
                 <p className="text-muted-foreground text-lg">Loading sessions...</p>
@@ -515,7 +537,7 @@ export function SessionView({
           ) : error ? (
             <aside
               aria-label="Session history"
-              className="border-sidebar-border bg-sidebar flex h-full w-[340px] shrink-0 flex-col border-r"
+              className="border-sidebar-border bg-sidebar flex h-full w-[264px] shrink-0 flex-col border-r"
             >
               {/* Real error surfaces via the global ConnectionStatusBanner. */}
               <div className="flex flex-1 items-center justify-center">
@@ -535,20 +557,29 @@ export function SessionView({
 
       {/* Main content area - Chat + Browser layout */}
       <div className="flex h-full min-w-0 flex-1 flex-col">
+        {browserFirst && (
+          <SessionTabs
+            sessions={sessions}
+            selectedSessionId={selectedSessionId}
+            onSessionSelect={onSessionSelect}
+          />
+        )}
         <div className="relative flex min-h-0 min-w-0 flex-1">
           {/* Chat area - renders cached instances, shows selected one */}
           {/* Hidden when maximized, but keep rendered for state preservation */}
           <div
             className={cn(
               'relative h-full min-w-0 flex-1',
+              browserLeft && 'order-2',
               // In maximized mode: hide but keep in DOM
               hideChatInMaximized && 'invisible w-0 max-w-0 min-w-0 overflow-hidden'
             )}
             // In side-by-side mode: chat and browser share space equally (flex-1),
             // but chat has max width for readability. Extra space goes to browser.
             style={{
-              maxWidth:
-                (showBrowserPanel || showFilePanel) && !hideChatInMaximized
+              maxWidth: browserLeft
+                ? `${LAYOUT_WIDTHS.CHAT_RAIL}px`
+                : (showBrowserPanel || showFilePanel) && !hideChatInMaximized
                   ? `${LAYOUT_WIDTHS.CHAT_MAX}px`
                   : undefined,
             }}
@@ -598,7 +629,8 @@ export function SessionView({
                 // min-w-0 allows flex item to shrink below content size
                 // Expanded mode: no left padding (chat provides scrollbar gap), 16px on other sides
                 // 1:1 ratio with chat for better readability
-                !hideChatInMaximized && 'flex-1 pt-4 pr-4 pb-3',
+                !hideChatInMaximized && !browserLeft && 'flex-1 pt-4 pr-4 pb-3',
+                browserLeft && 'flex-1 pt-4 pb-3 pl-4',
                 // Maximized mode: 16px padding on all sides (chat is hidden)
                 // browser takes full width
                 hideChatInMaximized && 'flex-1 px-4 pt-4 pb-3'
@@ -624,7 +656,8 @@ export function SessionView({
             <div
               className={cn(
                 'h-full min-w-0',
-                !fileMaximized && 'flex-1 pt-4 pr-4 pb-3',
+                !fileMaximized && !browserLeft && 'flex-1 pt-4 pr-4 pb-3',
+                browserLeft && 'flex-1 pt-4 pb-3 pl-4',
                 fileMaximized && 'flex-1 px-4 pt-4 pb-3'
               )}
             >

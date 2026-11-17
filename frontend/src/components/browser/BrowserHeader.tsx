@@ -13,6 +13,7 @@ import { Globe, Maximize, Columns2, X, Expand } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useResponsiveLayout } from '@/hooks'
+import { useUIStore } from '@/stores'
 import type { BrowserViewMode } from '@/types'
 
 // =============================================================================
@@ -36,6 +37,8 @@ export function BrowserHeader({ mode, onModeChange, title }: BrowserHeaderProps)
   const isExpanded = mode !== 'embedded'
   const isMaximized = mode === 'maximized'
   const { allowSideBySide } = useResponsiveLayout()
+  // The browser-first layout keeps the panel open, so closing it would be a no-op
+  const canClose = useUIStore((s) => s.sessionLayout) !== 'browser'
 
   return (
     <div className="relative flex items-center justify-end gap-2 p-2">
@@ -72,19 +75,21 @@ export function BrowserHeader({ mode, onModeChange, title }: BrowserHeaderProps)
           )}
 
           {/* Close button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="secondary"
-                size="icon-sm"
-                onClick={() => onModeChange('embedded')}
-                aria-label="Close"
-              >
-                <X className="size-3.5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Close</TooltipContent>
-          </Tooltip>
+          {canClose && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="icon-sm"
+                  onClick={() => onModeChange('embedded')}
+                  aria-label="Close"
+                >
+                  <X className="size-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Close</TooltipContent>
+            </Tooltip>
+          )}
         </>
       ) : (
         /* Embedded: single expand button */

@@ -10,6 +10,8 @@ import type { UISession } from '@/types'
 import { DRAFT_SESSION_ID } from '@/lib/constants'
 import { useChatStore } from './chatStore'
 
+export type SessionLayout = 'normal' | 'browser'
+
 interface UIState {
   // Session view state
   sidebarOpen: boolean
@@ -27,7 +29,15 @@ interface UIState {
   // Appearance
   /** Dark mode preference. Applied to document.documentElement on change. */
   darkMode: boolean
+  /** Manual choice; turns off followSystem */
   setDarkMode: (enabled: boolean) => void
+  /** Track the OS light/dark setting live (HIG default) */
+  followSystem: boolean
+  setFollowSystem: (enabled: boolean) => void
+
+  /** Session view layout: sidebar + chat + browser, or browser-first with session tabs */
+  sessionLayout: SessionLayout
+  setSessionLayout: (layout: SessionLayout) => void
 
   // Message detail toggles
   /** Expand reasoning sections (e.g. "Thought for 3s") by default */
@@ -88,8 +98,16 @@ export const useUIStore = create<UIState>()(
           : true,
       setDarkMode: (enabled) => {
         document.documentElement.classList.toggle('dark', enabled)
-        set({ darkMode: enabled })
+        set({ darkMode: enabled, followSystem: false })
       },
+      followSystem: true,
+      setFollowSystem: (enabled) => {
+        set({ followSystem: enabled })
+        if (enabled) applySystemAppearance()
+      },
+
+      sessionLayout: 'normal',
+      setSessionLayout: (layout) => set({ sessionLayout: layout }),
 
       // Message detail toggles
       showReasoningDetails: false,
@@ -139,6 +157,8 @@ export const useUIStore = create<UIState>()(
         | 'userClosedSidebar'
         | 'activeTab'
         | 'darkMode'
+        | 'followSystem'
+        | 'sessionLayout'
         | 'showReasoningDetails'
         | 'showToolCallDetails'
         | 'showBrowserActionDetails'
@@ -148,6 +168,8 @@ export const useUIStore = create<UIState>()(
         userClosedSidebar: state.userClosedSidebar,
         activeTab: state.activeTab,
         darkMode: state.darkMode,
+        followSystem: state.followSystem,
+        sessionLayout: state.sessionLayout,
         showReasoningDetails: state.showReasoningDetails,
         showToolCallDetails: state.showToolCallDetails,
         showBrowserActionDetails: state.showBrowserActionDetails,
@@ -155,10 +177,28 @@ export const useUIStore = create<UIState>()(
       }),
       // Sync dark mode class after rehydration from localStorage
       onRehydrateStorage: () => (state) => {
-        if (state) {
+        if (state?.followSystem) {
+          // Deferred: rehydration can run inside create(), before useUIStore is assigned
+          queueMicrotask(applySystemAppearance)
+        } else if (state) {
           document.documentElement.classList.toggle('dark', state.darkMode)
         }
       },
     }
   )
 )
+
+const darkQuery = '(prefers-color-scheme: dark)'
+
+/** Apply the OS appearance (used while followSystem is on). */
+function applySystemAppearance() {
+  const dark = window.matchMedia(darkQuery).matches
+  document.documentElement.classList.toggle('dark', dark)
+  useUIStore.setState({ darkMode: dark })
+}
+
+if (typeof window !== 'undefined') {
+  window.matchMedia(darkQuery).addEventListener('change', () => {
+    if (useUIStore.getState().followSystem) applySystemAppearance()
+  })
+}

@@ -23,52 +23,53 @@
 
 :root {
   /* General */
-  --accent: var(--color-neutral-200);
-  --accent-foreground: var(--color-neutral-900);
-  --background: var(--color-white);
-  --border: var(--color-neutral-300);
-  --destructive: var(--color-red-500);
-  --foreground: var(--color-neutral-950);
-  --input: var(--color-neutral-300);
-  --muted: var(--color-neutral-100);
-  --muted-foreground: var(--color-neutral-600);
-  --primary: var(--color-fuchsia-500);
-  --primary-foreground: var(--color-neutral-50);
-  --secondary: var(--color-neutral-200);
-  --secondary-foreground: var(--color-neutral-900);
+  /* Apple HIG system colours (light). Secondary greys are the accessible variants (4.5:1). */
+  --accent: #e3e3e8;
+  --accent-foreground: #1d1d1f;
+  --background: #ffffff;
+  --border: #d1d1d6;
+  --destructive: #d70015;
+  --foreground: #1d1d1f;
+  --input: #d1d1d6;
+  --muted: #f2f2f7;
+  --muted-foreground: #6c6c70;
+  --primary: #007aff;
+  --primary-foreground: #ffffff;
+  --secondary: #efeff4;
+  --secondary-foreground: #1d1d1f;
 
   /* Card */
-  --card: var(--color-neutral-100);
-  --card-foreground: var(--color-neutral-950);
-  --card-hover: var(--color-neutral-200);
-  --card-selected-ring: var(--color-fuchsia-300);
-  --card-error-ring: var(--color-red-300);
+  --card: #f2f2f7;
+  --card-foreground: #1d1d1f;
+  --card-hover: #e9e9ee;
+  --card-selected-ring: #007aff;
+  --card-error-ring: #d70015;
 
   /* Popover */
-  --popover: var(--color-neutral-50);
-  --popover-foreground: var(--color-neutral-950);
+  --popover: #ffffff;
+  --popover-foreground: #1d1d1f;
 
   /* Focus */
-  --ring: var(--color-blue-500);
-  --ring-error: var(--color-red-500);
+  --ring: #007aff;
+  --ring-error: #d70015;
 
   /* Sidebar */
-  --sidebar: var(--color-neutral-50);
-  --sidebar-accent: var(--color-neutral-200);
-  --sidebar-accent-foreground: var(--color-neutral-900);
-  --sidebar-border: var(--color-neutral-300);
-  --sidebar-foreground: var(--color-neutral-700);
-  --sidebar-primary: var(--color-neutral-900);
-  --sidebar-primary-foreground: var(--color-neutral-50);
-  --sidebar-ring: var(--color-blue-500);
-  --sidebar-muted: var(--color-neutral-500);
+  --sidebar: #f5f5f7;
+  --sidebar-accent: #e3e3e8;
+  --sidebar-accent-foreground: #1d1d1f;
+  --sidebar-border: #d1d1d6;
+  --sidebar-foreground: #1d1d1f;
+  --sidebar-primary: #1d1d1f;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-ring: #007aff;
+  --sidebar-muted: #6c6c70;
 
   /* Session Status */
-  --status-stopped: var(--color-zinc-600);
-  --status-error: var(--color-red-600);
-  --status-active: var(--color-blue-600);
-  --status-completed: var(--color-green-600);
-  --status-waiting-input: var(--color-amber-600);
+  --status-stopped: #6c6c70;
+  --status-error: #d70015;
+  --status-active: #248a3d;
+  --status-completed: #6c6c70;
+  --status-waiting-input: #c93400;
 
   /* Extended Tokens */
   --accent-0: var(--color-neutral-100);
@@ -97,7 +98,7 @@
   --secondary-hover: var(--color-neutral-100);
 
   /* Border Radius */
-  --radius-lg: 0.5rem;
+  --radius-lg: 0.625rem;
   --radius-md: calc(var(--radius-lg) - 2px);
   --radius-sm: calc(var(--radius-lg) - 4px);
 }
@@ -108,52 +109,53 @@
 
 .dark {
   /* General */
-  --accent: var(--color-neutral-800);
-  --accent-foreground: var(--color-neutral-100);
-  --background: var(--color-black);
-  --border: var(--color-neutral-700);
-  --destructive: var(--color-red-500);
-  --foreground: var(--color-neutral-50);
-  --input: var(--color-neutral-700);
-  --muted: var(--color-neutral-900);
-  --muted-foreground: var(--color-neutral-400);
-  --primary: var(--color-fuchsia-500);
-  --primary-foreground: var(--color-neutral-50);
-  --secondary: var(--color-neutral-800);
-  --secondary-foreground: var(--color-neutral-100);
+  /* Apple HIG system colours (dark) */
+  --accent: #3a3a3c;
+  --accent-foreground: #f5f5f7;
+  --background: #1c1c1e;
+  --border: #38383a;
+  --destructive: #ff453a;
+  --foreground: #f5f5f7;
+  --input: #38383a;
+  --muted: #2c2c2e;
+  --muted-foreground: #aeaeb2;
+  --primary: #0a84ff;
+  --primary-foreground: #ffffff;
+  --secondary: #2c2c2e;
+  --secondary-foreground: #f5f5f7;
 
   /* Card */
-  --card: var(--color-neutral-900);
-  --card-foreground: var(--color-white);
-  --card-hover: var(--color-neutral-800);
-  --card-selected-ring: var(--color-fuchsia-800);
-  --card-error-ring: var(--color-red-800);
+  --card: #2c2c2e;
+  --card-foreground: #f5f5f7;
+  --card-hover: #3a3a3c;
+  --card-selected-ring: #0a84ff;
+  --card-error-ring: #ff453a;
 
   /* Popover */
-  --popover: var(--color-neutral-950);
-  --popover-foreground: var(--color-neutral-50);
+  --popover: #2c2c2e;
+  --popover-foreground: #f5f5f7;
 
   /* Focus */
-  --ring: var(--color-blue-500);
-  --ring-error: var(--color-red-500);
+  --ring: #0a84ff;
+  --ring-error: #ff453a;
 
   /* Sidebar */
-  --sidebar: var(--color-neutral-950);
-  --sidebar-accent: var(--color-neutral-900);
-  --sidebar-accent-foreground: var(--color-neutral-100);
-  --sidebar-border: var(--color-neutral-700);
-  --sidebar-foreground: var(--color-neutral-300);
-  --sidebar-primary: var(--color-neutral-50);
-  --sidebar-primary-foreground: var(--color-neutral-900);
-  --sidebar-ring: var(--color-blue-500);
-  --sidebar-muted: var(--color-neutral-500);
+  --sidebar: #232325;
+  --sidebar-accent: #3a3a3c;
+  --sidebar-accent-foreground: #f5f5f7;
+  --sidebar-border: #38383a;
+  --sidebar-foreground: #f5f5f7;
+  --sidebar-primary: #f5f5f7;
+  --sidebar-primary-foreground: #1c1c1e;
+  --sidebar-ring: #0a84ff;
+  --sidebar-muted: #aeaeb2;
 
   /* Session Status */
-  --status-stopped: var(--color-zinc-400);
-  --status-error: var(--color-red-500);
-  --status-active: var(--color-blue-500);
-  --status-completed: var(--color-green-500);
-  --status-waiting-input: var(--color-amber-500);
+  --status-stopped: #aeaeb2;
+  --status-error: #ff453a;
+  --status-active: #30d158;
+  --status-completed: #aeaeb2;
+  --status-waiting-input: #ff9f0a;
 
   /* Extended Tokens */
   --accent-0: var(--color-neutral-900);
@@ -260,7 +262,7 @@
   }
 
   body {
-    font-family: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
+    font-family: 'JetBrains Mono Variable', ui-monospace, monospace;
     background-color: var(--background);
     color: var(--foreground);
   }

@@ -6,6 +6,8 @@ import { AgentMaxRoundsSettings } from './AgentMaxRoundsSettings'
 export function GeneralSettings() {
   const darkMode = useUIStore((s) => s.darkMode)
   const setDarkMode = useUIStore((s) => s.setDarkMode)
+  const followSystem = useUIStore((s) => s.followSystem)
+  const setFollowSystem = useUIStore((s) => s.setFollowSystem)
   const showReasoningDetails = useUIStore((s) => s.showReasoningDetails)
   const setShowReasoningDetails = useUIStore((s) => s.setShowReasoningDetails)
   const showToolCallDetails = useUIStore((s) => s.showToolCallDetails)
@@ -17,6 +19,21 @@ export function GeneralSettings() {
 
   return (
     <div className="flex flex-col gap-3">
+      {/* Match System Appearance */}
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col">
+          <label htmlFor="follow-system" className="text-sm font-bold">
+            Match System Appearance
+          </label>
+          <span className="text-muted-foreground text-xs">
+            Switch between light and dark with your OS setting
+          </span>
+        </div>
+        <Switch id="follow-system" checked={followSystem} onCheckedChange={setFollowSystem} />
+      </div>
+
+      <div className="border-border border-t" />
+
       {/* Dark Mode */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
@@ -24,7 +41,7 @@ export function GeneralSettings() {
             Dark Mode
           </label>
           <span className="text-muted-foreground text-xs">
-            Use the dark color theme across the app
+            Use the dark color theme across the app (turns off Match System Appearance)
           </span>
         </div>
         <Switch id="dark-mode" checked={darkMode} onCheckedChange={setDarkMode} />

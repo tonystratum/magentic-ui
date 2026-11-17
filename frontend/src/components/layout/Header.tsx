@@ -1,13 +1,15 @@
 /**
  * App header component with layout controls.
- * Supports dashboard view (centered logo) and session view (with sidebar toggle).
+ * Supports dashboard view and session view (sidebar toggle + Normal/Browser layout switch).
  */
 import { useState, type ReactNode } from 'react'
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { SettingsDialog, SettingsTrigger } from '@/components/settings'
 import { NotificationCenter } from './NotificationCenter'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useUIStore } from '@/stores'
+import type { SessionLayout } from '@/stores/uiStore'
 import { useResponsiveLayout } from '@/hooks'
 import { PanelLeftClose, PanelLeftOpen, LayoutGrid, Plus } from 'lucide-react'
 
@@ -35,6 +37,8 @@ export function Header({
   const isDashboard = layout === 'dashboard'
   const isSidebarVisible = layout === 'sidebar-show'
   const hasBottomSlot = !!bottomSlot
+  const sessionLayout = useUIStore((s) => s.sessionLayout)
+  const setSessionLayout = useUIStore((s) => s.setSessionLayout)
 
   // Use same breakpoint as sidebar visibility (820px = SIDEBAR + CHAT_MIN)
   const { allowSidebar } = useResponsiveLayout()
@@ -43,8 +47,8 @@ export function Header({
 
   const AppTitle = (
     <div className="flex shrink-0 items-center gap-2">
-      <img src="/magentic-logo.svg" alt="MagenticLite" className="h-8 w-auto" />
-      <span className="text-foreground pt-1 text-2xl leading-none tracking-tight">
+      <img src="/magentic-logo.svg" alt="MagenticLite" className="h-6 w-auto" />
+      <span className="text-foreground text-base leading-none tracking-tight">
         <span className="font-bold">Magentic</span>
         <span className="font-light">Lite</span>
       </span>
@@ -57,7 +61,7 @@ export function Header({
         <Button
           variant="secondary"
           size="icon"
-          className="size-9"
+          className="size-8"
           onClick={onToggleSidebar}
           aria-label={isSidebarVisible ? 'Hide sidebar' : 'Show sidebar'}
         >
@@ -78,7 +82,7 @@ export function Header({
         <Button
           variant="secondary"
           size="icon"
-          className="size-9"
+          className="size-8"
           onClick={onBackToDashboard}
           aria-label="Back to dashboard"
         >
@@ -96,53 +100,34 @@ export function Header({
     </Button>
   )
 
+  // Normal | Browser layout switch, session view only
+  const LayoutSwitch = !isDashboard ? (
+    <Tabs value={sessionLayout} onValueChange={(v) => setSessionLayout(v as SessionLayout)}>
+      <TabsList aria-label="Session layout">
+        <TabsTrigger value="normal" className="px-3 text-xs">
+          Normal
+        </TabsTrigger>
+        <TabsTrigger value="browser" className="px-3 text-xs">
+          Browser
+        </TabsTrigger>
+      </TabsList>
+    </Tabs>
+  ) : null
+
   return (
-    <header
-      className={cn(
-        'border-sidebar-border bg-sidebar w-full border-b',
-        hasBottomSlot ? 'h-[120px]' : 'h-[68px]'
-      )}
-    >
-      {/* Wide screen: absolute positioning for perfect center alignment */}
-      {allowSidebar && (
-        <div className="relative h-full">
-          <div className="absolute top-4 left-5 flex items-center gap-4">
-            {SidebarToggleButton}
-            {DashboardButton}
-          </div>
+    <header className="border-sidebar-border bg-sidebar w-full border-b">
+      <div className="flex h-[52px] items-center gap-3 px-4">
+        {allowSidebar && sessionLayout === 'normal' && SidebarToggleButton}
+        {DashboardButton}
+        {AppTitle}
+        <div className="flex-1" />
+        {LayoutSwitch}
+        {NewSessionButton}
+        <NotificationCenter />
+        <SettingsTrigger onClick={openSettings} />
+      </div>
 
-          <div className="absolute top-[18px] left-1/2 -translate-x-1/2">{AppTitle}</div>
-
-          {hasBottomSlot && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2">{bottomSlot}</div>
-          )}
-
-          <div className="absolute top-4 right-5 flex items-center gap-3">
-            {NewSessionButton}
-            <NotificationCenter />
-            <SettingsTrigger onClick={openSettings} />
-          </div>
-        </div>
-      )}
-
-      {/* Narrow screen: flexbox layout */}
-      {!allowSidebar && (
-        <div className="flex h-full flex-col">
-          <div className="flex h-[68px] shrink-0 items-center justify-between px-5">
-            {AppTitle}
-            <div className="flex shrink-0 items-center gap-3">
-              {DashboardButton}
-              {NewSessionButton}
-              <NotificationCenter />
-              <SettingsTrigger onClick={openSettings} />
-            </div>
-          </div>
-
-          {hasBottomSlot && (
-            <div className="flex shrink-0 items-center justify-center pb-4">{bottomSlot}</div>
-          )}
-        </div>
-      )}
+      {hasBottomSlot && <div className="flex justify-center pb-3">{bottomSlot}</div>}
 
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </header>
