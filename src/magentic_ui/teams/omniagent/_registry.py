@@ -81,7 +81,7 @@ def _extract_json(stdout: str) -> str:
     """Return the last JSON-like line from stdout."""
     for line in reversed(stdout.splitlines()):
         line = line.strip()
-        if line.startswith("{") or line.startswith("["):
+        if line.startswith(("{", "[")):
             return line
     return stdout
 

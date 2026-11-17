@@ -16,7 +16,4 @@ def json_loads(text: str) -> dict:
     text = text.strip("\n")
     if text.startswith("```") and text.endswith("\n```"):
         text = "\n".join(text.split("\n")[1:-1])
-    try:
-        return json.loads(text)
-    except json.decoder.JSONDecodeError as json_err:
-        raise json_err
+    return json.loads(text)

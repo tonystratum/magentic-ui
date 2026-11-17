@@ -68,17 +68,16 @@ class BaseTool(ABC):
             raise ValueError(
                 f"You must set {self.__class__.__name__}.name, either by @register_tool(name=...) or explicitly setting {self.__class__.__name__}.name"
             )
-        if isinstance(self.parameters, dict):
-            if not is_tool_schema(
-                {
-                    "name": self.name,
-                    "description": self.description,
-                    "parameters": self.parameters,
-                }
-            ):
-                raise ValueError(
-                    "The parameters, when provided as a dict, must confirm to a valid openai-compatible JSON schema."
-                )
+        if isinstance(self.parameters, dict) and not is_tool_schema(
+            {
+                "name": self.name,
+                "description": self.description,
+                "parameters": self.parameters,
+            }
+        ):
+            raise ValueError(
+                "The parameters, when provided as a dict, must confirm to a valid openai-compatible JSON schema."
+            )
 
     @abstractmethod
     def call(
@@ -113,9 +112,8 @@ class BaseTool(ABC):
             params_json: dict = params
         if isinstance(self.parameters, list):
             for param in self.parameters:
-                if param.get("required"):
-                    if param["name"] not in params_json:
-                        raise ValueError("Parameters %s is required!" % param["name"])
+                if param.get("required") and param["name"] not in params_json:
+                    raise ValueError(f"Parameters {param['name']} is required!")
         elif isinstance(self.parameters, dict):
             import jsonschema
 

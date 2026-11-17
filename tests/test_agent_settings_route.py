@@ -222,7 +222,7 @@ class TestRoutes:
         assert persisted["web_surfer"]["max_rounds"] == 300
 
     def test_put_with_only_web_surfer_preserves_orchestrator(self) -> None:
-        client, state = _make_test_app(
+        client, _state = _make_test_app(
             {
                 "harness_config": {
                     "orchestrator": {"max_rounds": 25},

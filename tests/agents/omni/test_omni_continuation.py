@@ -192,8 +192,10 @@ async def test_subagent_user_stop_appends_no_redelegate_directive(
     # Two LLM calls: round 1 emits the delegate_cua tool call, round 2 ends.
     client = _mock_llm_client(
         [
-            '<tool_call>{"name": "delegate_cua", "arguments": '
-            '{"task": "browse"}}</tool_call>',
+            (
+                '<tool_call>{"name": "delegate_cua", "arguments": '
+                '{"task": "browse"}}</tool_call>'
+            ),
             "<answer>done</answer>",
         ]
     )
@@ -244,10 +246,12 @@ async def test_subagent_user_stop_aborts_rest_of_batch(tmp_path: Path) -> None:
         [
             # Round 1 emits TWO delegate_cua calls in one response.
             # The first one user-stops; the second must NOT execute.
-            '<tool_call>{"name": "delegate_cua", "arguments": '
-            '{"task": "first task"}}</tool_call>'
-            '<tool_call>{"name": "delegate_cua", "arguments": '
-            '{"task": "second task"}}</tool_call>',
+            (
+                '<tool_call>{"name": "delegate_cua", "arguments": '
+                '{"task": "first task"}}</tool_call>'
+                '<tool_call>{"name": "delegate_cua", "arguments": '
+                '{"task": "second task"}}</tool_call>'
+            ),
             # Round 2: orchestrator wraps up.
             "<answer>done</answer>",
         ]

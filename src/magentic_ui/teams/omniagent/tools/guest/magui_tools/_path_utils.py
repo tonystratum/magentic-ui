@@ -17,6 +17,4 @@ def is_restricted(path: Path) -> bool:
     parts = path.parts
     if any(p in _RESTRICTED_PARTS for p in parts):
         return True
-    if any(s in p for p in parts for s in _RESTRICTED_SUBSTRINGS):
-        return True
-    return False
+    return bool(any(s in p for p in parts for s in _RESTRICTED_SUBSTRINGS))

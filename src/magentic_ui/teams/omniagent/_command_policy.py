@@ -906,13 +906,12 @@ def _classify_git(segment: str) -> ClassificationResult:
                 )
 
         # Special handling for `git branch` — only read-only without mutation flags
-        if subcommand == "branch":
-            if not _git_branch_is_read_only(subcommand_args):
-                return ClassificationResult(
-                    CommandVerdict.REQUIRE_APPROVAL,
-                    ApprovalCategory.DANGEROUS_GIT_OP,
-                    "This git branch command may create, rename, or delete branches.",
-                )
+        if subcommand == "branch" and not _git_branch_is_read_only(subcommand_args):
+            return ClassificationResult(
+                CommandVerdict.REQUIRE_APPROVAL,
+                ApprovalCategory.DANGEROUS_GIT_OP,
+                "This git branch command may create, rename, or delete branches.",
+            )
 
         return ClassificationResult(
             CommandVerdict.ALLOW, None, f"git {subcommand}: read-only"
@@ -958,11 +957,7 @@ def _git_branch_is_read_only(args: list[str]) -> bool:
 
     saw_read_only = False
     for arg in args:
-        if (
-            arg in _BRANCH_READ_ONLY_FLAGS
-            or arg.startswith("--format=")
-            or arg.startswith("--sort=")
-        ):
+        if arg in _BRANCH_READ_ONLY_FLAGS or arg.startswith(("--format=", "--sort=")):
             saw_read_only = True
         elif arg.startswith("-"):
             # Unknown flag — might be mutation (e.g. -d, -D, -m, -M, -c, -C)

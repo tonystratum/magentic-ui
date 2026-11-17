@@ -203,9 +203,11 @@ class TestDispatchWiring:
         client = _mock_llm_client(
             [
                 # Round 1: model delegates with all three params
-                '<tool_call>{"name": "delegate_cua", "arguments": '
-                '{"task": "Look up news", "context": "User in NYC", '
-                '"files": ["./note.txt"]}}</tool_call>',
+                (
+                    '<tool_call>{"name": "delegate_cua", "arguments": '
+                    '{"task": "Look up news", "context": "User in NYC", '
+                    '"files": ["./note.txt"]}}</tool_call>'
+                ),
                 # Round 2: model wraps up
                 "<answer>done</answer>",
             ]
@@ -258,9 +260,11 @@ class TestDispatchWiring:
                 # files is a string (not a list); context is a dict (not a
                 # string). Without coercion, files would be iterated
                 # char-by-char and context.strip() would raise.
-                '<tool_call>{"name": "delegate_cua", "arguments": '
-                '{"task": "go", "context": {"oops": 1}, '
-                '"files": "./single.txt"}}</tool_call>',
+                (
+                    '<tool_call>{"name": "delegate_cua", "arguments": '
+                    '{"task": "go", "context": {"oops": 1}, '
+                    '"files": "./single.txt"}}</tool_call>'
+                ),
                 "<answer>done</answer>",
             ]
         )
@@ -347,8 +351,10 @@ class TestPoolFullRetry:
         client = _mock_llm_client(
             [
                 # Round 1: model delegates a single web task.
-                '<tool_call>{"name": "delegate_cua", "arguments": '
-                '{"task": "Look up news"}}</tool_call>',
+                (
+                    '<tool_call>{"name": "delegate_cua", "arguments": '
+                    '{"task": "Look up news"}}</tool_call>'
+                ),
                 # Round 2 (after successful retry): model wraps up.
                 "<answer>done</answer>",
             ]
@@ -441,8 +447,10 @@ class TestDelegateModelErrorAbort:
         # The model stubbornly re-delegates every round.
         client = _mock_llm_client(
             [
-                '<tool_call>{"name": "delegate_cua", "arguments": '
-                '{"task": "browse"}}</tool_call>'
+                (
+                    '<tool_call>{"name": "delegate_cua", "arguments": '
+                    '{"task": "browse"}}</tool_call>'
+                )
             ]
             * 5
         )

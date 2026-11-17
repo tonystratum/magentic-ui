@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import asyncio
 from abc import ABC, abstractmethod
+from contextlib import AbstractAsyncContextManager
 from types import TracebackType
-from typing import AsyncContextManager, Self
+from typing import Self
 
 from loguru import logger
 from playwright.async_api import (
@@ -55,7 +56,7 @@ async def connect_cdp_with_retry(
     raise TimeoutError("Browser CDP endpoint did not become available in time")
 
 
-class PlaywrightBrowser(AsyncContextManager["PlaywrightBrowser"], ABC):
+class PlaywrightBrowser(AbstractAsyncContextManager["PlaywrightBrowser"], ABC):
     """
     Abstract base class for Playwright browser.
     """

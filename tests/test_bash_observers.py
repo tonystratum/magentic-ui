@@ -89,7 +89,7 @@ async def test_filesystem_diff_post_only_skips_pre_probe_for_mv() -> None:
             ),
         ]
     )
-    result, annotations = await enrich(
+    result, _annotations = await enrich(
         "mv /tmp/src /tmp/dst",
         CWD,
         sandbox,
@@ -103,7 +103,7 @@ async def test_filesystem_diff_post_only_skips_pre_probe_for_mv() -> None:
 @pytest.mark.asyncio
 async def test_filesystem_diff_silent_for_safe_command() -> None:
     sandbox = FakeSandbox([ExecuteResult("file1\nfile2\n", "", 0)])
-    result, annotations = await enrich(
+    _result, annotations = await enrich(
         "ls /tmp",
         CWD,
         sandbox,
@@ -124,7 +124,7 @@ async def test_word_split_hint_fires_on_path_error() -> None:
             ),
         ]
     )
-    result, annotations = await enrich(
+    _result, annotations = await enrich(
         "mv /tmp/My Folder/file.txt /dst/",
         CWD,
         sandbox,
@@ -137,7 +137,7 @@ async def test_word_split_hint_fires_on_path_error() -> None:
 @pytest.mark.asyncio
 async def test_word_split_hint_silent_on_success() -> None:
     sandbox = FakeSandbox([ExecuteResult("", "", 0)])
-    result, annotations = await enrich(
+    _result, annotations = await enrich(
         "mv /tmp/a /tmp/b",
         CWD,
         sandbox,
@@ -158,7 +158,7 @@ async def test_word_split_hint_suppressed_when_prior_annotation_present() -> Non
             ExecuteResult(stdout="", stderr="", exit_code=0),
         ]
     )
-    result, annotations = await enrich(
+    _result, annotations = await enrich(
         "rm /tmp/foo",
         CWD,
         sandbox,

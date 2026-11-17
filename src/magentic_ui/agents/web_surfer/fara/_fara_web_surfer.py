@@ -921,61 +921,74 @@ class FaraWebSurfer:
                         f"URL must be string, got {type(args['url']).__name__}",
                     )
 
-            if action_type in ("input_text", "type"):
-                # FaraQwen3Next type action doesn't require text (no-coord version)
-                # But if coordinate is present, text is required
-                if "coordinate" in args:
-                    if "text" not in args and "text_value" not in args:
-                        return (
-                            False,
-                            "type with coordinate missing 'text' field",
-                        )
+            # FaraQwen3Next type action doesn't require text (no-coord version)
+            # But if coordinate is present, text is required
+            if (
+                action_type in ("input_text", "type")
+                and "coordinate" in args
+                and "text" not in args
+                and "text_value" not in args
+            ):
+                return (
+                    False,
+                    "type with coordinate missing 'text' field",
+                )
 
             if action_type == "web_search" and "query" not in args:
                 return False, "web_search missing 'query' field"
 
-            if action_type == "scroll" and "pixels" in args:
-                if not isinstance(args["pixels"], (int, float)):
-                    return (
-                        False,
-                        f"Scroll pixels must be number, got {type(args['pixels']).__name__}",
-                    )
+            if (
+                action_type == "scroll"
+                and "pixels" in args
+                and not isinstance(args["pixels"], (int, float))
+            ):
+                return (
+                    False,
+                    f"Scroll pixels must be number, got {type(args['pixels']).__name__}",
+                )
 
-            if action_type == "hscroll" and "pixels" in args:
-                if not isinstance(args["pixels"], (int, float)):
-                    return (
-                        False,
-                        f"Hscroll pixels must be number, got {type(args['pixels']).__name__}",
-                    )
+            if (
+                action_type == "hscroll"
+                and "pixels" in args
+                and not isinstance(args["pixels"], (int, float))
+            ):
+                return (
+                    False,
+                    f"Hscroll pixels must be number, got {type(args['pixels']).__name__}",
+                )
 
-            if action_type in ("keypress", "key") and "keys" in args:
-                if not isinstance(args["keys"], list):
-                    return (
-                        False,
-                        f"Keys must be a list, got {type(args['keys']).__name__}",
-                    )
+            if (
+                action_type in ("keypress", "key")
+                and "keys" in args
+                and not isinstance(args["keys"], list)
+            ):
+                return (
+                    False,
+                    f"Keys must be a list, got {type(args['keys']).__name__}",
+                )
 
-            if action_type == "read_page_answer_question":
-                if "question" not in args:
-                    return (
-                        False,
-                        "read_page_answer_question missing 'question' field",
-                    )
+            if action_type == "read_page_answer_question" and "question" not in args:
+                return (
+                    False,
+                    "read_page_answer_question missing 'question' field",
+                )
 
-            if action_type == "ask_user_question":
-                if "question" not in args:
-                    return (
-                        False,
-                        "ask_user_question missing 'question' field",
-                    )
+            if action_type == "ask_user_question" and "question" not in args:
+                return (
+                    False,
+                    "ask_user_question missing 'question' field",
+                )
 
-            if action_type == "terminate" and "answer" not in args:
-                # Backward compat: old models use "thoughts" instead of "answer"
-                if "thoughts" not in args:
-                    return (
-                        False,
-                        "terminate missing 'answer' field",
-                    )
+            # Backward compat: old models use "thoughts" instead of "answer"
+            if (
+                action_type == "terminate"
+                and "answer" not in args
+                and "thoughts" not in args
+            ):
+                return (
+                    False,
+                    "terminate missing 'answer' field",
+                )
 
             return True, ""
         except Exception as e:

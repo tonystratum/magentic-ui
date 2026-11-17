@@ -94,10 +94,12 @@ class TestMultiCallSuccess:
         client = _mock_llm_client(
             [
                 # Round 1: model emits two bash calls
-                '<tool_call>{"name": "bash", "arguments": '
-                '{"command": "echo first"}}</tool_call>\n'
-                '<tool_call>{"name": "bash", "arguments": '
-                '{"command": "echo second"}}</tool_call>',
+                (
+                    '<tool_call>{"name": "bash", "arguments": '
+                    '{"command": "echo first"}}</tool_call>\n'
+                    '<tool_call>{"name": "bash", "arguments": '
+                    '{"command": "echo second"}}</tool_call>'
+                ),
                 # Round 2: model wraps up
                 "<answer>both done</answer>",
             ]
@@ -145,12 +147,14 @@ class TestMidBatchUserInput:
         client = _mock_llm_client(
             [
                 # Round 1: bash, request_user_input, bash
-                '<tool_call>{"name": "bash", "arguments": '
-                '{"command": "echo before"}}</tool_call>\n'
-                '<tool_call>{"name": "request_user_input", '
-                '"arguments": {"prompt": "continue?"}}</tool_call>\n'
-                '<tool_call>{"name": "bash", "arguments": '
-                '{"command": "echo after"}}</tool_call>',
+                (
+                    '<tool_call>{"name": "bash", "arguments": '
+                    '{"command": "echo before"}}</tool_call>\n'
+                    '<tool_call>{"name": "request_user_input", '
+                    '"arguments": {"prompt": "continue?"}}</tool_call>\n'
+                    '<tool_call>{"name": "bash", "arguments": '
+                    '{"command": "echo after"}}</tool_call>'
+                ),
                 # Round 2: model adapts
                 "<answer>ok</answer>",
             ]
@@ -196,12 +200,14 @@ class TestMidBatchDeclineAlt:
         client = _mock_llm_client(
             [
                 # Round 1: three bash calls; user declines #2 with alt instructions
-                '<tool_call>{"name": "bash", "arguments": '
-                '{"command": "echo first"}}</tool_call>\n'
-                '<tool_call>{"name": "bash", "arguments": '
-                '{"command": "rm -rf /risky"}}</tool_call>\n'
-                '<tool_call>{"name": "bash", "arguments": '
-                '{"command": "echo third"}}</tool_call>',
+                (
+                    '<tool_call>{"name": "bash", "arguments": '
+                    '{"command": "echo first"}}</tool_call>\n'
+                    '<tool_call>{"name": "bash", "arguments": '
+                    '{"command": "rm -rf /risky"}}</tool_call>\n'
+                    '<tool_call>{"name": "bash", "arguments": '
+                    '{"command": "echo third"}}</tool_call>'
+                ),
                 # Round 2: model adapts to alt
                 "<answer>adapted</answer>",
             ]
@@ -257,8 +263,10 @@ class TestParseErrorSurfacing:
                 # Round 1: malformed tool call
                 "<tool_call>not json</tool_call>",
                 # Round 2: model self-corrects
-                '<tool_call>{"name": "bash", "arguments": '
-                '{"command": "echo recovered"}}</tool_call>',
+                (
+                    '<tool_call>{"name": "bash", "arguments": '
+                    '{"command": "echo recovered"}}</tool_call>'
+                ),
                 # Round 3: wraps up
                 "<answer>ok</answer>",
             ]
@@ -283,11 +291,13 @@ class TestParseErrorSurfacing:
         client = _mock_llm_client(
             [
                 # Round 1: valid + malformed + valid
-                '<tool_call>{"name": "bash", "arguments": '
-                '{"command": "echo a"}}</tool_call>\n'
-                "<tool_call>not json</tool_call>\n"
-                '<tool_call>{"name": "bash", "arguments": '
-                '{"command": "echo c"}}</tool_call>',
+                (
+                    '<tool_call>{"name": "bash", "arguments": '
+                    '{"command": "echo a"}}</tool_call>\n'
+                    "<tool_call>not json</tool_call>\n"
+                    '<tool_call>{"name": "bash", "arguments": '
+                    '{"command": "echo c"}}</tool_call>'
+                ),
                 "<answer>done</answer>",
             ]
         )

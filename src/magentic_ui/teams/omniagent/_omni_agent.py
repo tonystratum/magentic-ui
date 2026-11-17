@@ -303,8 +303,10 @@ class OmniAgent:
                 async for evt in handle_max_rounds_continuation(
                     source_name=self.name,
                     total_rounds=total_rounds,
+                    # awaited inside this iteration, before `pending` changes
                     generate_final_answer=lambda: self._generate_final_answer(
-                        chat, pending
+                        chat,
+                        pending,  # noqa: B023
                     ),
                 ):
                     if isinstance(evt, bool):
@@ -590,7 +592,8 @@ class OmniAgent:
                             tool=tool_name,
                             tool_args=tool_args,
                             tool_call_id=tool_call_id,
-                            approval_status=approval_status,
+                            # str-Enum members equal the Literal values
+                            approval_status=approval_status,  # ty: ignore[invalid-argument-type]
                         )
                     ),
                 )
@@ -699,9 +702,7 @@ class OmniAgent:
                             tool_result = output.to_output(self._viewport)
                         except Exception as e:
                             tool_result = ToolCallError(f"{tool_name}: {e}").to_output()
-                            logger.error(
-                                "Tool %s failed: %s", tool_name, e, exc_info=True
-                            )
+                            logger.exception("Tool %s failed", tool_name)
 
                 # Truncate per-call output before any use (including the
                 # abort path below) so a large delegate response can't bypass

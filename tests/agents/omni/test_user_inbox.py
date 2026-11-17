@@ -74,8 +74,10 @@ class TestUserInbox:
             [
                 # Round 1: model emits a bash call. Caller queues a message
                 # while we're between rounds.
-                '<tool_call>{"name": "bash", "arguments": '
-                '{"command": "echo hi"}}</tool_call>',
+                (
+                    '<tool_call>{"name": "bash", "arguments": '
+                    '{"command": "echo hi"}}</tool_call>'
+                ),
                 # Round 2: model wraps up.
                 "<answer>done</answer>",
             ]
@@ -117,8 +119,10 @@ class TestUserInbox:
         pause_controller = PauseController()
         client = _mock_llm_client(
             [
-                '<tool_call>{"name": "bash", "arguments": '
-                '{"command": "echo hi"}}</tool_call>',
+                (
+                    '<tool_call>{"name": "bash", "arguments": '
+                    '{"command": "echo hi"}}</tool_call>'
+                ),
                 "<answer>done</answer>",
             ]
         )
@@ -161,8 +165,10 @@ class TestUserInbox:
         pause_controller = PauseController()
         client = _mock_llm_client(
             [
-                '<tool_call>{"name": "bash", "arguments": '
-                '{"command": "echo hi"}}</tool_call>',
+                (
+                    '<tool_call>{"name": "bash", "arguments": '
+                    '{"command": "echo hi"}}</tool_call>'
+                ),
                 "<answer>done</answer>",
             ]
         )
@@ -204,8 +210,10 @@ class TestSubAgentSteeringSurface:
             [
                 # Round 1: model emits a bash call (stand-in for any
                 # tool that, in real use, might delegate to a sub-agent).
-                '<tool_call>{"name": "bash", "arguments": '
-                '{"command": "echo hi"}}</tool_call>',
+                (
+                    '<tool_call>{"name": "bash", "arguments": '
+                    '{"command": "echo hi"}}</tool_call>'
+                ),
                 # Round 2: model wraps up.
                 "<answer>done</answer>",
             ]
@@ -252,10 +260,14 @@ class TestSubAgentSteeringSurface:
         client = _mock_llm_client(
             [
                 # 3 rounds: each does a bash call, last one finalizes.
-                '<tool_call>{"name": "bash", "arguments": '
-                '{"command": "echo r1"}}</tool_call>',
-                '<tool_call>{"name": "bash", "arguments": '
-                '{"command": "echo r2"}}</tool_call>',
+                (
+                    '<tool_call>{"name": "bash", "arguments": '
+                    '{"command": "echo r1"}}</tool_call>'
+                ),
+                (
+                    '<tool_call>{"name": "bash", "arguments": '
+                    '{"command": "echo r2"}}</tool_call>'
+                ),
                 "<answer>done</answer>",
             ]
         )
@@ -299,8 +311,10 @@ class TestSubAgentSteeringSurface:
         pause_controller = PauseController()
         client = _mock_llm_client(
             [
-                '<tool_call>{"name": "bash", "arguments": '
-                '{"command": "echo hi"}}</tool_call>',
+                (
+                    '<tool_call>{"name": "bash", "arguments": '
+                    '{"command": "echo hi"}}</tool_call>'
+                ),
                 "<answer>done</answer>",
             ]
         )
@@ -356,8 +370,10 @@ class TestSubAgentSteeringSurface:
         pause_controller = PauseController()
         client = _mock_llm_client(
             [
-                '<tool_call>{"name": "bash", "arguments": '
-                '{"command": "echo r1"}}</tool_call>',
+                (
+                    '<tool_call>{"name": "bash", "arguments": '
+                    '{"command": "echo r1"}}</tool_call>'
+                ),
                 "<answer>done</answer>",
             ]
         )

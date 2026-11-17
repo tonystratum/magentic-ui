@@ -104,8 +104,8 @@ class WebpageTextUtilsPlaywright:
         html = await page.evaluate("document.documentElement.outerHTML;")
         res = self._markdown_converter.convert_stream(
             io.BytesIO(html.encode("utf-8")), file_extension=".html", url=page.url
-        )  # type: ignore
-        text_content = res.text_content  # type: ignore
+        )
+        text_content = res.text_content
 
         # Tokenize the text content and limit to max_tokens
         if max_tokens == -1:

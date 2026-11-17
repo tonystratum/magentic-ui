@@ -113,12 +113,12 @@ class ContentItem(BaseModelCompatibleDict):
 
     @property
     def type(self) -> Literal["text", "image", "file", "audio", "video"]:
-        t, v = self.get_type_and_value()
+        t, _v = self.get_type_and_value()
         return t
 
     @property
     def value(self) -> str:
-        t, v = self.get_type_and_value()
+        _t, v = self.get_type_and_value()
         return v
 
 
@@ -160,6 +160,6 @@ class Message(BaseModelCompatibleDict):
     def role_checker(cls, value: str) -> str:
         if value not in [USER, ASSISTANT, SYSTEM, FUNCTION]:
             raise ValueError(
-                f"{value} must be one of {','.join([USER, ASSISTANT, SYSTEM, FUNCTION])}"
+                f"{value} must be one of {f'{USER},{ASSISTANT},{SYSTEM},{FUNCTION}'}"
             )
         return value

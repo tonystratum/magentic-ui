@@ -178,9 +178,9 @@ class DatabaseManager:
 
                     session.commit()
 
-                except Exception as e:
+                except Exception:
                     session.rollback()
-                    raise e
+                    raise
                 finally:
                     session.close()
                     self._init_lock.release()

@@ -378,7 +378,7 @@ I'll click login.
 <tool_call>
 {"name": "computer_use", "arguments": {"action": "click", "coordinate": [100, 50]}}
 </tool_call>"""
-        thoughts, action = agent._parse_thoughts_and_action(message)
+        thoughts, _action = agent._parse_thoughts_and_action(message)
         assert "Looking at the page" in thoughts
         assert "I'll click login." in thoughts
 
@@ -387,7 +387,7 @@ I'll click login.
 <tool_call>
 {'name': 'computer_use', 'arguments': {'action': 'click', 'coordinate': [100, 200]}}
 </tool_call>"""
-        thoughts, action = agent._parse_thoughts_and_action(message)
+        _thoughts, action = agent._parse_thoughts_and_action(message)
         assert action["arguments"]["action"] == "click"
 
     def test_parse_missing_tool_call_raises(self, agent):
@@ -886,7 +886,7 @@ class TestExecuteAction:
     @pytest.mark.asyncio
     async def test_history_back(self, agent):
         env = _make_mock_env()
-        is_stop, desc = await agent._execute_action(env, {"action": "history_back"})
+        is_stop, _desc = await agent._execute_action(env, {"action": "history_back"})
         assert is_stop is False
         env.back.assert_called_once()
 
@@ -903,7 +903,7 @@ class TestExecuteAction:
     @pytest.mark.asyncio
     async def test_scroll_up(self, agent):
         env = _make_mock_env()
-        is_stop, desc = await agent._execute_action(
+        _is_stop, desc = await agent._execute_action(
             env, {"action": "scroll", "pixels": 300}
         )
         assert "scrolled up" in desc

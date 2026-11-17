@@ -446,6 +446,4 @@ def should_skip_after_exec(exit_code: int, stderr: str) -> bool:
     """
     if exit_code in (-1, 126, 127):
         return True
-    if exit_code != 0 and stderr.strip():
-        return True
-    return False
+    return bool(exit_code != 0 and stderr.strip())

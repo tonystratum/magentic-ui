@@ -313,10 +313,12 @@ class TestWebSocketAuth:
 
     def test_smoke_end_to_end_handshake(self):
         """End-to-end handshake through a real TestClient."""
-        with TestClient(_build_app(), base_url="http://localhost") as c:
-            with c.websocket_connect(
+        with (
+            TestClient(_build_app(), base_url="http://localhost") as c,
+            c.websocket_connect(
                 "/api/ws/runs/42",
                 subprotocols=[WS_PROTOCOL_TAG, SESSION_TOKEN],
                 headers={"Host": "localhost"},
-            ) as ws:
-                assert ws.receive_json() == {"run_id": 42, "ok": True}
+            ) as ws,
+        ):
+            assert ws.receive_json() == {"run_id": 42, "ok": True}

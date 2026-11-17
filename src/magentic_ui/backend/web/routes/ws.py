@@ -1,7 +1,7 @@
 # api/ws.py
 import asyncio
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 
 import websockets
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
@@ -130,7 +130,7 @@ async def run_websocket(
                             {
                                 "type": "error",
                                 "error": "Invalid start message format",
-                                "timestamp": datetime.utcnow().isoformat(),
+                                "timestamp": datetime.now(UTC).isoformat(),
                             }
                         )
 
@@ -144,7 +144,7 @@ async def run_websocket(
 
                 elif message.get("type") == "ping":
                     await websocket.send_json(
-                        {"type": "pong", "timestamp": datetime.utcnow().isoformat()}
+                        {"type": "pong", "timestamp": datetime.now(UTC).isoformat()}
                     )
 
                 elif message.get("type") == "input_response":
@@ -204,7 +204,7 @@ async def run_websocket(
                     {
                         "type": "error",
                         "error": "Invalid message format",
-                        "timestamp": datetime.utcnow().isoformat(),
+                        "timestamp": datetime.now(UTC).isoformat(),
                     }
                 )
 

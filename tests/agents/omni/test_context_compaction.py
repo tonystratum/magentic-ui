@@ -525,8 +525,10 @@ class TestHoisting:
         client = _mock_llm_client(
             [
                 (
-                    "planning\n"
-                    '<tool_call>{"name": "bash", "arguments": {"cmd": "ls"}}</tool_call>',
+                    (
+                        "planning\n"
+                        '<tool_call>{"name": "bash", "arguments": {"cmd": "ls"}}</tool_call>'
+                    ),
                     200,
                 ),
                 ("SUMMARY", 20),

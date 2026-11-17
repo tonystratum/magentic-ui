@@ -720,7 +720,7 @@ class FaraQwen3Agent:
         else:
             raise ValueError(f"Unknown action: {action_type}")
 
-        if not is_stop:
+        if not is_stop and action_type != "pause_and_memorize_fact":
             # Post-action wait policy:
             #   - pause_and_memorize_fact is purely local (no DOM change),
             #     so neither a load wait nor a settle delay is required.
@@ -732,12 +732,11 @@ class FaraQwen3Agent:
             #     navigation, in which case the wait is a no-op anyway.
             #     Real failures (target closed, protocol errors) still
             #     propagate — only TimeoutError is swallowed.
-            if action_type != "pause_and_memorize_fact":
-                try:
-                    await env.wait_for_load(state="domcontentloaded", timeout=20000)
-                except TimeoutError:
-                    pass
-                await asyncio.sleep(3)
+            try:
+                await env.wait_for_load(state="domcontentloaded", timeout=20000)
+            except TimeoutError:
+                pass
+            await asyncio.sleep(3)
 
         self._state.num_actions += 1
         return is_stop, description

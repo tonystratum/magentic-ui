@@ -517,7 +517,7 @@ class WebSocketManager:
                 # Lazy: only run the scrub/truncate work when DEBUG is enabled.
                 logger.opt(lazy=True).debug(
                     "Formatted message: {}",
-                    lambda: _truncate_for_log(_scrub_for_log(formatted)),
+                    lambda: _truncate_for_log(_scrub_for_log(formatted)),  # noqa: B023  # evaluated immediately  # evaluated immediately
                 )
                 await self._send_message(run_id, formatted)
                 await self._save_message(run_id, self._update_to_dict(update))

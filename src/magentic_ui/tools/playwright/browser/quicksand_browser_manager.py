@@ -201,7 +201,7 @@ class QuicksandBrowserManager:
         sandbox: QuicksandSandbox | None = None,
         pool_size: int = 5,
     ) -> None:
-        self._sandbox: QuicksandSandbox = sandbox  # type: ignore[assignment]  # set via .sandbox property before start()
+        self._sandbox: QuicksandSandbox = sandbox  # ty: ignore[invalid-assignment]  # set via .sandbox property before start()
         self._pool_size = pool_size
         self._slot_available = asyncio.Condition()
         self._started = False

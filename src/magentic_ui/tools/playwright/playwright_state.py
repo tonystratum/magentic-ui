@@ -23,7 +23,7 @@ class BrowserState(BaseModel):
     Represents the saved state of a browser.
     """
 
-    state: Any  # type: ignore
+    state: Any
     # originally: state: StorageState (TypedDict from Playwright, not compatible with Pydantic on Python < 3.12)
     tabs: list[Tab]
     activeTabIndex: int

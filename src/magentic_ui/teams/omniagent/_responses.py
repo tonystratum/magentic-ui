@@ -29,6 +29,7 @@ from openai.lib.streaming.chat import (
     FunctionToolCallArgumentsDeltaEvent,
     RefusalDeltaEvent,
 )
+from openai.types.chat import ChatCompletionMessageParam
 
 from ..._ai_client import is_retryable_model_error
 from ...agents.message_schemas import (
@@ -449,7 +450,7 @@ class OmniResponses:
             try:
                 async with self._client.chat.completions.stream(
                     model=self._model,
-                    messages=messages,  # type: ignore[arg-type]  # Message is TypedDict
+                    messages=cast("list[ChatCompletionMessageParam]", messages),
                     temperature=self._temperature,
                     top_p=0.8,
                     presence_penalty=1.0,

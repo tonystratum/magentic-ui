@@ -100,17 +100,17 @@ def handle_target_closed(max_retries: int = 2, timeout_secs: int = 30):
 
                     if not (is_tunnel_error or is_target_closed):
                         # Not an error we handle, re-raise
-                        raise e
+                        raise
 
                     last_error = e
                     retries += 1
 
                     if retries > max_retries:
-                        raise e
+                        raise
 
                     if page is None:
                         # Can't recover without page reference
-                        raise e
+                        raise
 
                     error_type = (
                         "tunnel connection" if is_tunnel_error else "target closed"
@@ -219,16 +219,16 @@ def handle_target_closed_with_context(max_retries: int = 2, timeout_secs: int = 
 
                     if not (is_tunnel_error or is_target_closed):
                         # Not an error we handle, re-raise
-                        raise e
+                        raise
 
                     last_error = e
                     retries += 1
 
                     if retries > max_retries:
-                        raise e
+                        raise
 
                     if page is None:
-                        raise e
+                        raise
 
                     error_type = (
                         "tunnel connection" if is_tunnel_error else "target closed"
@@ -247,7 +247,7 @@ def handle_target_closed_with_context(max_retries: int = 2, timeout_secs: int = 
                             logger.error(
                                 "playwright_controller.handle_target_closed_with_context(): Browser connection lost - cannot recover automatically"
                             )
-                            raise e
+                            raise
 
                         # Try basic recovery first
                         await _recover_page(page, timeout_secs)
@@ -426,7 +426,7 @@ class PlaywrightController:
                         if "net::ERR_ABORTED" in str(e_inner):
                             pass
                         else:
-                            raise e_inner
+                            raise
                     download = await download_info.value
                     fname = os.path.join(
                         self.downloads_folder, download.suggested_filename
@@ -439,7 +439,7 @@ class PlaywrightController:
                     )
                     reset_last_download = True
             else:
-                raise e_outer
+                raise
         return reset_prior_metadata_hash, reset_last_download
 
     @handle_target_closed()
@@ -615,7 +615,7 @@ class PlaywrightController:
             new_page = await page.wait_for_event("popup", timeout=2000)
             assert isinstance(new_page, Page)
             await self.on_new_page(new_page)
-        except (TimeoutError, asyncio.TimeoutError):
+        except TimeoutError:
             pass
 
         return new_page

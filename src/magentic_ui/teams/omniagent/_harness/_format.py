@@ -122,9 +122,11 @@ def format_tool_output(
         entries.append(
             (
                 "remarks",
-                f"Some fields were too large and have been truncated. Full contents were saved to disk. "
-                f"See {files} for the paths. To avoid this in the future, modify your tool call to "
-                f"limit the output size.",
+                (
+                    f"Some fields were too large and have been truncated. Full contents were saved to disk. "
+                    f"See {files} for the paths. To avoid this in the future, modify your tool call to "
+                    f"limit the output size."
+                ),
             )
         )
 

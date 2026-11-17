@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any, cast
 import httpx
 import openai
 from openai import AsyncOpenAI
+from openai.types.chat import ChatCompletionMessageParam
 
 if TYPE_CHECKING:
     from .agents.web_surfer.fara._types import LLMMessage
@@ -132,12 +133,12 @@ class ChatClient:
     async def create(self, messages: list[LLMMessage], **kwargs: Any) -> str:
         """Call LLM and return response text."""
         openai_messages = [m.to_openai_dict() for m in messages]
-        response = await self._client.chat.completions.create(  # type: ignore[reportUnknownMemberType]
+        response = await self._client.chat.completions.create(
             model=self.model,
-            messages=openai_messages,  # type: ignore[arg-type]
+            messages=cast("list[ChatCompletionMessageParam]", openai_messages),
             **kwargs,
         )
-        return str(response.choices[0].message.content or "").strip()  # type: ignore[reportUnknownMemberType]
+        return str(response.choices[0].message.content or "").strip()
 
     async def close(self) -> None:
         """Close the underlying HTTP client."""
