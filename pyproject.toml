@@ -63,8 +63,8 @@ Issues = "https://github.com/microsoft/magentic-ui/issues"
 magentic = "magentic_ui.backend.cli:run"
 magentic-ui = "magentic_ui.backend.cli:run"
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "poethepoet",
     "ruff",
     "ty",
