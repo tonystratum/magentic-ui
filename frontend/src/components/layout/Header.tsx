@@ -3,6 +3,7 @@
  * Supports dashboard view and session view (sidebar toggle + Normal/Browser layout switch).
  */
 import { useState, type ReactNode } from 'react'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { SettingsDialog, SettingsTrigger } from '@/components/settings'
@@ -46,7 +47,8 @@ export function Header({
   const openSettings = () => setSettingsOpen(true)
 
   const AppTitle = (
-    <div className="flex shrink-0 items-center gap-2">
+    // Session view on phones: no room for the name next to the controls
+    <div className={cn('shrink-0 items-center gap-2', isDashboard ? 'flex' : 'hidden sm:flex')}>
       <span className="text-foreground text-base leading-none tracking-tight">
         <span className="font-bold">Magentic</span>
         <span className="font-light">Lite</span>
@@ -93,9 +95,14 @@ export function Header({
   ) : null
 
   const NewSessionButton = (
-    <Button onClick={onNewSession} disabled={newSessionDisabled}>
+    <Button
+      onClick={onNewSession}
+      disabled={newSessionDisabled}
+      aria-label="New Session"
+      className="max-sm:w-9 max-sm:px-0"
+    >
       <Plus className="size-4" />
-      New Session
+      <span className="hidden sm:inline">New Session</span>
     </Button>
   )
 
@@ -115,7 +122,7 @@ export function Header({
 
   return (
     <header className="border-sidebar-border bg-sidebar w-full border-b">
-      <div className="flex h-[52px] items-center gap-3 px-4">
+      <div className="flex h-[52px] items-center gap-2 px-3 sm:gap-3 sm:px-4">
         {allowSidebar && sessionLayout === 'normal' && SidebarToggleButton}
         {DashboardButton}
         {AppTitle}

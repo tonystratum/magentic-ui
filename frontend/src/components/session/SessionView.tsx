@@ -499,9 +499,13 @@ export function SessionView({
   // Show file panel when a file is being previewed
   const showFilePanel = !!previewFile
   // Either panel can hide chat in maximized mode
-  const hideChatInMaximized = browserViewMode === 'maximized' || (showFilePanel && fileMaximized)
+  // Narrow screens stack the browser above the chat instead of hiding the chat
+  const stacked = !allowSideBySide && !!showBrowserPanel
+  const hideChatInMaximized =
+    (browserViewMode === 'maximized' && !stacked) || (showFilePanel && fileMaximized)
   // Browser-first layout: the browser sits left of a narrow chat rail
-  const browserLeft = browserFirst && (showBrowserPanel || showFilePanel) && !hideChatInMaximized
+  const browserLeft =
+    browserFirst && (showBrowserPanel || showFilePanel) && !hideChatInMaximized && !stacked
 
   // Browser-first layout always shows the browser panel once there is something to show
   useEffect(() => {
@@ -564,12 +568,13 @@ export function SessionView({
             onSessionSelect={onSessionSelect}
           />
         )}
-        <div className="relative flex min-h-0 min-w-0 flex-1">
+        <div className={cn('relative flex min-h-0 min-w-0 flex-1', stacked && 'flex-col')}>
           {/* Chat area - renders cached instances, shows selected one */}
           {/* Hidden when maximized, but keep rendered for state preservation */}
           <div
             className={cn(
-              'relative h-full min-w-0 flex-1',
+              'relative min-w-0 flex-1',
+              stacked ? 'order-2 min-h-0' : 'h-full',
               browserLeft && 'order-2',
               // In maximized mode: hide but keep in DOM
               hideChatInMaximized && 'invisible w-0 max-w-0 min-w-0 overflow-hidden'
@@ -625,11 +630,12 @@ export function SessionView({
           {showBrowserPanel && (
             <div
               className={cn(
-                'h-full min-w-0',
+                'min-w-0',
+                stacked ? 'h-[55%] shrink-0 px-4 pt-4 pb-2' : 'h-full',
                 // min-w-0 allows flex item to shrink below content size
                 // Expanded mode: no left padding (chat provides scrollbar gap), 16px on other sides
                 // 1:1 ratio with chat for better readability
-                !hideChatInMaximized && !browserLeft && 'flex-1 pt-4 pr-4 pb-3',
+                !hideChatInMaximized && !browserLeft && !stacked && 'flex-1 pt-4 pr-4 pb-3',
                 browserLeft && 'flex-1 pt-4 pb-3 pl-4',
                 // Maximized mode: 16px padding on all sides (chat is hidden)
                 // browser takes full width
