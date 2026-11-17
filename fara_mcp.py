@@ -24,6 +24,7 @@ import httpx
 import websockets
 from mcp.server.mcpserver import Context, MCPServer
 from mcp.server.stdio import stdio_server
+from websockets.typing import Subprotocol
 
 BASE = os.environ.get("FARA_UI_URL", "http://127.0.0.1:8081").rstrip("/")
 USER_ID = "guestuser@gmail.com"  # frontend's DEFAULT_USER_ID, so runs show in the UI
@@ -116,7 +117,7 @@ def _log(run: Run) -> None:
 def _report(run: Run, consume: bool = True) -> str:
     """Status, steps not yet reported, pending question, answer; consume marks the steps as reported."""
     out = [f"session {run.session_id}: {run.status} ({len(run.steps)} steps, {time.time() - run.started:.0f}s)"]
-    new = run.steps[run.seen:]
+    new = run.steps[run.seen :]
     if consume:
         run.seen = len(run.steps)
     if new:
@@ -136,7 +137,7 @@ def _report(run: Run, consume: bool = True) -> str:
 async def _send_channel(params: dict[str, Any]) -> None:
     try:
         await _outbound.notify(CHANNEL, params)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001  # a failed push must not fail the tool call
         print(f"fara_mcp: channel push failed ({e!r})", file=sys.stderr)
 
 
@@ -190,7 +191,7 @@ async def _listen(run: Run) -> None:
         async for raw in run.ws:
             try:
                 _handle(run, json.loads(raw))
-            except Exception as e:  # one odd message must not drop the connection
+            except Exception as e:  # noqa: BLE001  # one odd message must not drop the connection
                 print(f"fara_mcp: skipped message ({e!r}): {str(raw)[:200]}", file=sys.stderr)
     except websockets.ConnectionClosed:
         pass
@@ -205,7 +206,7 @@ async def _connect(run: Run) -> None:
     for refresh in (False, True):  # a restarted backend has a new token and refuses the old one with 403
         try:
             run.ws = await websockets.connect(
-                url, subprotocols=[WS_PROTOCOL_TAG, await _get_token(refresh)], max_size=None
+                url, subprotocols=[Subprotocol(WS_PROTOCOL_TAG), Subprotocol(await _get_token(refresh))], max_size=None
             )
             break
         except websockets.InvalidStatus:
@@ -273,7 +274,7 @@ async def fara_status(session_id: int | None = None, wait_seconds: int = 0) -> s
         run.changed.clear()
         try:
             await asyncio.wait_for(run.changed.wait(), deadline - time.time())
-        except asyncio.TimeoutError:
+        except TimeoutError:
             break
     return _report(run)
 
