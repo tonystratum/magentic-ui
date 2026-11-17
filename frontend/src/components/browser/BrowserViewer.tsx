@@ -8,6 +8,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { VncScreen, type VncScreenHandle } from 'react-vnc'
 import { cn } from '@/lib/utils'
+import { getSessionToken, WS_PROTOCOL_TAG } from '@/api/auth'
 
 // =============================================================================
 // Types
@@ -196,7 +197,10 @@ export function BrowserViewer({
         scaleViewport
         showDotCursor={false}
         background="var(--card)"
-        rfbOptions={{ credentials: { password } }}
+        rfbOptions={{
+          credentials: { password },
+          wsProtocols: getSessionToken() ? [WS_PROTOCOL_TAG, getSessionToken()] : [],
+        }}
         style={{
           width: '100%',
           height: '100%',

@@ -43,12 +43,13 @@ export function cn(...inputs: ClassValue[]) {
 
 /**
  * Build noVNC WebSocket URL from port number.
- * Uses current hostname and protocol for deployment flexibility.
+ * Goes through the backend's /api/ws/novnc proxy on the page's own origin,
+ * so the live view also works behind a reverse proxy or tunnel.
  *
  * @param port - The noVNC port number
  * @returns WebSocket URL for VNC connection
  */
 export function buildNovncUrl(port: string): string {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-  return `${protocol}//${window.location.hostname}:${port}/websockify`
+  return `${protocol}//${window.location.host}/api/ws/novnc/${port}`
 }

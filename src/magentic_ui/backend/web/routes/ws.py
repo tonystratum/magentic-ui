@@ -1,12 +1,16 @@
 # api/ws.py
+import asyncio
 import json
 from datetime import datetime
+
+import websockets
 
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from loguru import logger
 
 from ...datamodel import Run
 from ..auth import DEV_ORIGINS, WS_PROTOCOL_TAG, is_allowed_host, is_valid_token
+from .. import deps
 from ..deps import get_db, get_websocket_manager
 from ..managers import WebSocketManager
 
@@ -211,3 +215,62 @@ async def run_websocket(
         logger.error(f"WebSocket error: {str(e)}")
     finally:
         await ws_manager.disconnect(run_id, ws=websocket)
+
+
+@router.websocket("/novnc/{port}")
+async def novnc_proxy(websocket: WebSocket, port: int):
+    """Relay a noVNC session through the backend's own origin.
+
+    The live browser view would otherwise connect to the slot's host port
+    directly, which a reverse proxy or tunnel in front of the backend
+    does not expose.
+    """
+    allowed, auth_subprotocol = authenticate_websocket(websocket)
+    manager = deps._quicksand_manager  # pyright: ignore[reportPrivateUsage]
+    novnc_ports = (
+        {s.novnc_host_port for s in manager._slots}  # pyright: ignore[reportPrivateUsage]
+        if manager
+        else set()
+    )
+    if not allowed or port not in novnc_ports:
+        await websocket.close(code=4401, reason="Unauthorized")
+        return
+
+    try:
+        upstream = await websockets.connect(
+            f"ws://127.0.0.1:{port}/websockify", max_size=None
+        )
+    except (OSError, websockets.InvalidHandshake):
+        await websocket.close(code=4004, reason="noVNC unavailable")
+        return
+    await websocket.accept(subprotocol=auth_subprotocol)
+
+    async def client_to_upstream() -> None:
+        while True:
+            message = await websocket.receive()
+            if message["type"] == "websocket.disconnect":
+                return
+            data = message.get("bytes")
+            await upstream.send(data if data is not None else message["text"])
+
+    async def upstream_to_client() -> None:
+        async for data in upstream:
+            if isinstance(data, bytes):
+                await websocket.send_bytes(data)
+            else:
+                await websocket.send_text(data)
+
+    tasks = [
+        asyncio.create_task(client_to_upstream()),
+        asyncio.create_task(upstream_to_client()),
+    ]
+    try:
+        await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+    finally:
+        for task in tasks:
+            task.cancel()
+        await upstream.close()
+        try:
+            await websocket.close()
+        except RuntimeError:
+            pass

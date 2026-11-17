@@ -30,6 +30,10 @@ user ──tasks, approvals──▶ Claude ──task text──▶ fara_mcp.py
   - The Python SDK (mcp 2.3) has no public API for this: the capability goes through `mcp._lowlevel_server.create_initialization_options(experimental_capabilities=…)`, and pushes use `ctx.session._connection.outbound`, captured on the first `fara_start`.
 - Registered in Claude Code (local scope, `~/.claude.json`): `claude mcp add fara -- uv run --script <repo>/fara_mcp.py`.
 - Launch with push enabled (interactive only; custom channels are not on the allowlist): `claude --dangerously-load-development-channels server:fara`.
+- **noVNC proxy** (the fork's only change to upstream code): the live browser view connected to `ws://<page hostname>:<slot noVNC port>/websockify`, which a tunnel or reverse proxy does not expose. The fork relays it through the backend instead:
+  - `src/magentic_ui/backend/web/routes/ws.py`: websocket `/api/ws/novnc/{port}`, same Host + subprotocol auth as the run socket. It accepts only Quicksand slot noVNC host ports and relays frames to `ws://127.0.0.1:{port}/websockify`.
+  - `frontend/src/lib/utils.ts` `buildNovncUrl` → `/api/ws/novnc/{port}` on the page's origin; `frontend/src/components/browser/BrowserViewer.tsx` passes `wsProtocols: ["magui.auth.bearer", token]` to noVNC.
+- **Remote access**: Cloudflare quick tunnel, `cloudflared tunnel --url http://localhost:8081 --http-host-header localhost`. The Host override is required: the backend rejects any Host other than `localhost`/`127.0.0.1` with 400. Anyone with the `trycloudflare.com` URL gets the session token from `index.html`, so full control.
 
 ## Backend protocol (as used)
 
@@ -43,7 +47,7 @@ user ──tasks, approvals──▶ Claude ──task text──▶ fara_mcp.py
 ## Environment facts (measured 2026-11-17)
 
 - llama.cpp: `Fara1.5-4B-Q4_K_L.gguf`, multimodal, `n_ctx` 65536, **1 slot**. Honors `chat_template_kwargs.enable_thinking=false`, which the Fara loop always sends; without it the output goes to `reasoning_content` and `content` is empty.
-- MagenticLite 0.2.2 from PyPI in `.venv`; start: `.venv/bin/magentic-ui --port 8081 --config config.yaml`. First start downloads the Quicksand Ubuntu image (308 MB). VM: 6 G RAM, 3 CPUs, 5 browser slots. `/dev/kvm` is accessible.
+- MagenticLite 0.2.2 from this fork, installed editable in `.venv` (`uv sync`), frontend built into `src/magentic_ui/backend/web/ui/` (gitignored; Node ≥24, pnpm 10); start: `.venv/bin/magentic-ui --port 8081 --config config.yaml`. First start downloads the Quicksand Ubuntu image (308 MB). VM: 6 G RAM, 3 CPUs, 5 browser slots. `/dev/kvm` is accessible.
 - Parallel sessions run, but llama.cpp has 1 slot, so model calls queue: 3 concurrent tasks worked, each slower.
 - Fara's start page is Bing.
 - `mcp` 2.x renamed FastMCP → `MCPServer` (`mcp.server.mcpserver`); the client API is unchanged.
@@ -51,7 +55,8 @@ user ──tasks, approvals──▶ Claude ──task text──▶ fara_mcp.py
 ## Setup (new machine)
 
 ```
-uv venv --python=3.12 --seed .venv && uv pip install --python .venv "magentic_ui>=0.2.0"
+uv sync                                                     # editable fork install in .venv
+(cd frontend && pnpm install --frozen-lockfile && pnpm build)  # → src/magentic_ui/backend/web/ui/
 # config.yaml as above; llama.cpp serving Fara on :8001
 curl -s localhost:8001/v1/models
 .venv/bin/magentic-ui --port 8081 --config config.yaml      # keep running
