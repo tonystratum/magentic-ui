@@ -66,8 +66,8 @@ magentic-ui = "magentic_ui.backend.cli:run"
 [tool.uv]
 dev-dependencies = [
     "poethepoet",
-    "pyright==1.1.401",
-    "ruff==0.4.8",
+    "ruff",
+    "ty",
     "pytest_asyncio",
     "pytest-cov",
     "pytest",
@@ -86,13 +86,13 @@ allow-direct-references = true
 fmt = "ruff format src tests"
 format.ref = "fmt"
 lint = "ruff check src tests"
-pyright = "pyright src"
+ty = "ty check src tests"
 test.sequence = [
     "playwright install",
     "pytest tests --cov=src --cov-report=xml --cov-report=term-missing",
 ]
 test.default_item_type = "cmd"
-check = ["fmt", "lint", "pyright", "test"]
+check = ["fmt", "lint", "ty", "fara-check", "test"]
 # fork's MCP server: latest ruff + ty, type-checked against its own PEP 723 env
 fara-check.executor.type = "simple"  # poe's default uv executor relocks uv.lock
 fara-check.shell = """
@@ -106,12 +106,8 @@ uvx ty check --python "$(uv python find --script fara_mcp.py)" fara_mcp.py
 pythonpath = ["src", "."]
 asyncio_default_fixture_loop_scope = "function"
 
-[tool.pyright]
-include = ["src", "tests"]
+[tool.ty.src]
 exclude = ["src/magentic_ui/backend/web/routes", "src/magentic_ui/agents/web_surfer/fara", "src/magentic_ui/tools/playwright/playwright_controller_fara.py"]
-typeCheckingMode = "strict"
-reportUnnecessaryIsInstance = false
-reportMissingTypeStubs = false
 
 
 [tool.hatch.build.targets.wheel]

@@ -53,7 +53,7 @@ jobs:
           source .venv/bin/activate
           poe lint
 
-  python-pyright:
+  python-ty:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -66,10 +66,10 @@ jobs:
           python-version-file: ".python-version"
       - run: uv sync --all-extras
         working-directory: .
-      - name: Run pyright
+      - name: Run ty
         run: |
           source .venv/bin/activate
-          poe pyright
+          poe ty
 
   python-test:
     # The locked Playwright version does not support Ubuntu 26.04.
