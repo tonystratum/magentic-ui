@@ -92,7 +92,9 @@ test.sequence = [
     "pytest tests --cov=src --cov-report=xml --cov-report=term-missing",
 ]
 test.default_item_type = "cmd"
-check = ["fmt", "lint", "ty", "fara-check", "test"]
+check = ["fmt", "lint", "ty", "fara-check", "frontend-check", "test"]
+frontend-check.executor.type = "simple"
+frontend-check.shell = "cd frontend && pnpm -s lint && pnpm -s format:check && pnpm -s type-check"
 # fork's MCP server: latest ruff + ty, type-checked against its own PEP 723 env
 fara-check.executor.type = "simple"  # poe's default uv executor relocks uv.lock
 fara-check.shell = """
