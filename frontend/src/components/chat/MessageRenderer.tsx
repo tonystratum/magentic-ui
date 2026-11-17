@@ -75,7 +75,8 @@ export const MessageRenderer = memo(function MessageRenderer({
     return (
       <div ref={ref} className="flex w-full flex-col items-end gap-2">
         <div className="flex w-full justify-end pl-16">
-          <div className="bg-secondary rounded-lg px-4 py-3 shadow-sm">
+          {/* min-w-0 + overflow-wrap: long URLs wrap instead of overflowing left in narrow chat */}
+          <div className="bg-secondary min-w-0 rounded-lg px-4 py-3 [overflow-wrap:anywhere] shadow-sm">
             <div className="text-secondary-foreground text-base leading-6">
               <TextContent content={message.content} />
             </div>
