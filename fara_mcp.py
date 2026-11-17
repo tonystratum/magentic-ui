@@ -206,8 +206,7 @@ async def _connect(run: Run) -> None:
 async def fara_start(ctx: Context, task: str, session_id: int | None = None) -> str:
     """Give Fara (a small local browser agent) one web task; returns immediately.
 
-    Fara sees screenshots and clicks/types in a sandboxed Chromium. Write the task
-    as concrete steps with a clear stop condition ("... then answer once done").
+    Fara sees screenshots and clicks/types in a sandboxed Chromium.
     Pass session_id to continue in the same browser session (follow-up task);
     omit it for a fresh session. Several sessions may run in parallel (5 browser slots).
     If this server is loaded as a channel, the result arrives as a <channel source="fara"> event;
@@ -241,7 +240,6 @@ async def fara_status(session_id: int | None = None, wait_seconds: int = 0) -> s
     wait_seconds (max 300) blocks until the task finishes or Fara asks for input.
     Without session_id, lists all sessions this server knows.
     Statuses: starting, active, awaiting_input (answer via fara_respond), complete, error, stopped, disconnected.
-    Fara's 'done' is its own claim; nothing here verifies it.
     """
     if session_id is None:
         if not RUNS:

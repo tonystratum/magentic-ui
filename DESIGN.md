@@ -9,13 +9,13 @@ user ──tasks, approvals──▶ Claude ──task text──▶ fara_mcp.py
                              ▲  │                                                     │ Fara loop
                              │  │                                                     ▼
                              │  │                                    Chromium in Quicksand VM ◀── llama.cpp :8001
-                             │  └─ tunes task wording; every change re-run and logged (runs/fara.jsonl)
+                             │  │
                              └──────── answer, status, step trace, Fara's questions ◀────────────────┘
 ```
 
-1. **Claude manages:** splits work into browser tasks, writes each task for Fara, judges results and risk, relays Fara's questions to the user. MagenticLite's own orchestrator is off (`agent_mode: websurfer_only`).
+1. **Claude manages:** splits work into browser tasks, writes each task for Fara, relays Fara's questions to the user. MagenticLite's own orchestrator is off (`agent_mode: websurfer_only`).
 2. **Fara sees and acts:** Fara1.5-4B on llama.cpp `:8001`, driven by MagenticLite's Fara loop: screenshot in, one action out (visit_url, left_click, type, scroll, …) in a sandboxed Chromium inside the Quicksand VM.
-3. **Claude judges from the trace only:** no screenshots or page text reach Claude. Fara's `answer` and step trace are its own claims.
+3. **Claude receives the trace only:** Fara's step trace and answer; no screenshots or page text.
 
 ## Components
 
@@ -70,7 +70,6 @@ Reliable so far:
 
 Unmeasured / to watch:
 - login with given credentials was **not** flagged as a critical point; Fara asked only for missing data. Critical-point behaviour still untested on purchases and real submits.
-- no check on false "done": nothing here verifies Fara's answer.
 - multi-page tasks: 9–15 actions in 84–123 s with 3 sessions sharing 1 llama.cpp slot.
 
 ## Open

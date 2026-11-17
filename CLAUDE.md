@@ -18,10 +18,10 @@ The MCP server is registered with local scope: `claude mcp add fara -- uv run --
 
 ## Using Fara
 
-- Write each task as concrete steps with a URL when known and a stop condition ("... Answer once done."). Prefer `visit_url` targets over "click the link" (a click on github.com/trending once hung the backend).
+- A click on a github.com/trending repo link once hung the backend for 6+ minutes (llama.cpp idle); giving the repo URL directly worked.
 - Use `session_id` for follow-ups that need the same browser state.
 - If Fara asks a question at a critical point (login, purchase, submit), relay it to the user and send their answer with `fara_respond`. Never answer it on the user's behalf.
-- Fara's answer is its own claim; report it as such. Results are judged from the trace only (no screenshots).
+- Claude receives Fara's step trace and answer only (no screenshots).
 - Parallel sessions share llama.cpp's single slot, so they queue at the model.
 
 ## Working on fara_mcp.py
