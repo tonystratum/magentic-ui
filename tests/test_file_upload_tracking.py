@@ -18,13 +18,6 @@ import time
 
 import pytest
 
-from magentic_ui.backend.utils.utils import (
-    ModifiedFileInfo,
-    construct_task,
-    find_available_filename,
-    get_modified_files,
-    sanitize_filename,
-)
 from magentic_ui.agents.message_schemas import (
     file_generated_props,
 )
@@ -32,7 +25,13 @@ from magentic_ui.backend.teammanager.teammanager import (
     _detect_changed_files,
     _file_to_ws,
 )
-
+from magentic_ui.backend.utils.utils import (
+    ModifiedFileInfo,
+    construct_task,
+    find_available_filename,
+    get_modified_files,
+    sanitize_filename,
+)
 
 # =============================================================================
 # sanitize_filename

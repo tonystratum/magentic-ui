@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import socket
 from pathlib import Path
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING
 
 from .base_playwright_browser import PlaywrightBrowser
 from .local_playwright_browser import LocalPlaywrightBrowser
@@ -28,7 +28,7 @@ def get_browser_resource(
     headless: bool = True,
     local: bool = False,
     quicksand_manager: QuicksandBrowserManager | None = None,
-) -> Tuple[PlaywrightBrowser, int, int]:
+) -> tuple[PlaywrightBrowser, int, int]:
     """
     Create a Playwright browser instance.
 

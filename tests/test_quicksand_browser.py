@@ -10,22 +10,25 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from magentic_ui.tools.playwright.browser.quicksand_browser_manager import (
-    BrowserSlot,
-    BrowserSlotPoolFullError,
-    QuicksandBrowserManager,
-    _AD_BLOCK_DOMAINS,
-    _build_host_resolver_rules,
-)
 from magentic_ui.sandbox._path_normalizer import (
     _is_wsl,
     extract_dir_basename,
     normalize_host_path,
-    validate_session_id as _validate_session_id,
+)
+from magentic_ui.sandbox._path_normalizer import (
     validate_dir_name as _validate_dir_name,
 )
+from magentic_ui.sandbox._path_normalizer import (
+    validate_session_id as _validate_session_id,
+)
 from magentic_ui.sandbox._path_validator import validate_host_path
-
+from magentic_ui.tools.playwright.browser.quicksand_browser_manager import (
+    _AD_BLOCK_DOMAINS,
+    BrowserSlot,
+    BrowserSlotPoolFullError,
+    QuicksandBrowserManager,
+    _build_host_resolver_rules,
+)
 
 # ---------------------------------------------------------------------------
 # Slot management (unit tests - no VM)
@@ -186,14 +189,14 @@ class TestProfileLifecycle:
 
         calls = [str(c) for c in mgr._sandbox.execute.call_args_list]
         chromium_calls = [c for c in calls if "--user-data-dir=" in c]
-        assert (
-            len(chromium_calls) >= 1
-        ), f"Expected chromium launch with --user-data-dir, got: {calls}"
+        assert len(chromium_calls) >= 1, (
+            f"Expected chromium launch with --user-data-dir, got: {calls}"
+        )
 
         cdp_calls = [c for c in calls if "--remote-debugging-port=" in c]
-        assert (
-            len(cdp_calls) >= 1
-        ), f"Expected chromium launch with --remote-debugging-port, got: {calls}"
+        assert len(cdp_calls) >= 1, (
+            f"Expected chromium launch with --remote-debugging-port, got: {calls}"
+        )
 
     @pytest.mark.asyncio
     async def test_stop_slot_merges_profile_back(self):
@@ -220,9 +223,9 @@ class TestProfileLifecycle:
         calls = [str(c) for c in mgr._sandbox.execute.call_args_list]
         # Verify the graceful shutdown uses pkill SIGTERM then pkill -9 SIGKILL
         graceful_calls = [c for c in calls if "pkill -f" in c and "pkill -9 -f" in c]
-        assert (
-            len(graceful_calls) >= 1
-        ), f"Expected graceful shutdown with pkill then pkill -9, got: {calls}"
+        assert len(graceful_calls) >= 1, (
+            f"Expected graceful shutdown with pkill then pkill -9, got: {calls}"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -433,10 +436,10 @@ class TestBuildHostResolverRules:
 
 class TestGetBrowserResourceQuicksand:
     def test_returns_quicksand_browser_when_manager_provided(self):
-        from magentic_ui.tools.playwright.browser.utils import get_browser_resource
         from magentic_ui.tools.playwright.browser.quicksand_playwright_browser import (
             QuicksandPlaywrightBrowser,
         )
+        from magentic_ui.tools.playwright.browser.utils import get_browser_resource
 
         mgr = QuicksandBrowserManager()
         browser, novnc_port, pw_port = get_browser_resource(
@@ -449,10 +452,10 @@ class TestGetBrowserResourceQuicksand:
         assert pw_port == -1
 
     def test_returns_local_browser_when_no_manager(self):
-        from magentic_ui.tools.playwright.browser.utils import get_browser_resource
         from magentic_ui.tools.playwright.browser.local_playwright_browser import (
             LocalPlaywrightBrowser,
         )
+        from magentic_ui.tools.playwright.browser.utils import get_browser_resource
 
         browser, _, _ = get_browser_resource(
             bind_dir=Path("/tmp"),

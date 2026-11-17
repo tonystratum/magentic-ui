@@ -12,7 +12,7 @@ chat timestamps disappear.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -85,7 +85,7 @@ def test_message_datetime_survives_fastapi_encoder(db: DatabaseManager) -> None:
     assert enc["created_at"] == "2026-06-08T19:22:16.095839+00:00"
     parsed = datetime.fromisoformat(enc["created_at"])
     assert parsed.tzinfo is not None
-    assert parsed.utcoffset() == timezone.utc.utcoffset(None)
+    assert parsed.utcoffset() == UTC.utcoffset(None)
 
 
 def test_python_mode_dump_keeps_datetime_objects(db: DatabaseManager) -> None:

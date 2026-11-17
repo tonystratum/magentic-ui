@@ -3,7 +3,7 @@
 import copy
 import json
 from datetime import datetime
-from typing import List, Literal, Union
+from typing import Literal
 
 from .schema import ASSISTANT, FUNCTION, SYSTEM, USER, ContentItem, Message
 
@@ -40,12 +40,12 @@ class NousFnCallPrompt:
 
     def preprocess_fncall_messages(
         self,
-        messages: List[Message],
-        functions: List[dict],
+        messages: list[Message],
+        functions: list[dict],
         lang: Literal["en", "zh"],
         parallel_function_calls: bool = True,
-        function_choice: Union[Literal["auto"], str] = "auto",
-    ) -> List[Message]:
+        function_choice: Literal["auto"] | str = "auto",
+    ) -> list[Message]:
         del lang  # ignored
         del parallel_function_calls  # ignored
         if function_choice != "auto":

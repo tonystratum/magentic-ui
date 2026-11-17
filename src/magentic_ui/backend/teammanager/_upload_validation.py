@@ -7,7 +7,7 @@ before they are persisted, broadcast, or registered for change tracking.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from loguru import logger
 
@@ -18,7 +18,7 @@ from ..utils.utils import get_file_type
 def validate_uploaded_files(
     app_dir: Path,
     attached_files: list[dict[str, Any]],
-    run: Optional[Run] = None,
+    run: Run | None = None,
 ) -> list[tuple[dict[str, Any], str, dict[str, Any]]]:
     """Validate raw upload dicts; return ``(info, url_path, safe_ref)`` tuples.
 

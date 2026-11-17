@@ -1,10 +1,10 @@
 import threading
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Optional, Dict
+from typing import Any
 
 from loguru import logger
-from sqlalchemy import exc, inspect, text, event
+from sqlalchemy import event, exc, inspect, text
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, and_, create_engine, select
 
@@ -15,7 +15,7 @@ from .schema_manager import SchemaManager
 class DatabaseManager:
     _init_lock = threading.Lock()
 
-    def __init__(self, engine_uri: str, base_dir: Optional[Path] = None):
+    def __init__(self, engine_uri: str, base_dir: Path | None = None):
         """
         Initialize DatabaseManager with database connection settings.
         Does not perform any database operations.
@@ -24,12 +24,12 @@ class DatabaseManager:
             engine_uri (str): Database connection URI (e.g. sqlite:///db.sqlite3)
             base_dir (Path, optional): Base directory for migration files. If None, uses current directory. Default: None.
         """
-        connection_args: Dict[str, Any] = (
+        connection_args: dict[str, Any] = (
             {"check_same_thread": False} if "sqlite" in engine_uri else {}
         )
 
         # Configure database-specific connection pooling
-        pool_kwargs: Dict[str, Any] = {}
+        pool_kwargs: dict[str, Any] = {}
         if "sqlite" in engine_uri:
             connection_args.update(
                 {
@@ -140,7 +140,7 @@ class DatabaseManager:
             return Response(message="Database is ready", status=True)
 
         except Exception as e:
-            error_msg = f"Database initialization failed: {str(e)}"
+            error_msg = f"Database initialization failed: {e!s}"
             logger.error(error_msg)
             return Response(message=error_msg, status=False)
         finally:
@@ -198,7 +198,7 @@ class DatabaseManager:
             )
 
         except Exception as e:
-            error_msg = f"Error while resetting database: {str(e)}"
+            error_msg = f"Error while resetting database: {e!s}"
             logger.error(error_msg)
             return Response(message=error_msg, status=False, data=None)
         finally:
@@ -226,7 +226,7 @@ class DatabaseManager:
                     select(model_class).where(model_class.id == model.id)
                 ).first()
                 if existing_model:
-                    model.updated_at = datetime.now(timezone.utc)
+                    model.updated_at = datetime.now(UTC)
                     for key, value in model.model_dump().items():
                         setattr(existing_model, key, value)
                     model = existing_model  # Use the updated existing model
@@ -366,5 +366,5 @@ class DatabaseManager:
             self.engine.dispose()
             logger.info("Database connections closed successfully")
         except Exception as e:
-            logger.error(f"Error closing database connections: {str(e)}")
+            logger.error(f"Error closing database connections: {e!s}")
             raise

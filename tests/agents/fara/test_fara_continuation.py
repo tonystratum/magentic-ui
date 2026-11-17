@@ -33,7 +33,6 @@ from magentic_ui.agents.web_surfer.fara._types import (
 )
 from magentic_ui.types import ContinuationRequest
 
-
 # ---------------------------------------------------------------------------
 # Helpers (mirror the ones in test_fara_qwen3.py — kept local to avoid
 # cross-module imports of test fixtures)
@@ -49,8 +48,9 @@ def _make_mock_env() -> AsyncMock:
 
 
 def _minimal_png() -> bytes:
-    from PIL import Image
     import io
+
+    from PIL import Image
 
     buf = io.BytesIO()
     Image.new("RGB", (100, 100), "white").save(buf, format="PNG")

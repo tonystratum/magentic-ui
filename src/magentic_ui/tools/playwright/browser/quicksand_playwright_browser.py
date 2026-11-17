@@ -9,11 +9,11 @@ profile back to the master directory.
 
 from __future__ import annotations
 
-from playwright.async_api import BrowserContext, async_playwright, Playwright, Browser
 from loguru import logger
+from playwright.async_api import Browser, BrowserContext, Playwright, async_playwright
 
 from .base_playwright_browser import PlaywrightBrowser, connect_cdp_with_retry
-from .quicksand_browser_manager import QuicksandBrowserManager, BrowserSlot
+from .quicksand_browser_manager import BrowserSlot, QuicksandBrowserManager
 
 
 class QuicksandPlaywrightBrowser(PlaywrightBrowser):

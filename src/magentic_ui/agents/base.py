@@ -11,9 +11,9 @@ from collections.abc import AsyncIterator
 from enum import StrEnum
 from typing import Any, Protocol, runtime_checkable
 
+from ..types import InputRequest
 from .message_schemas import HandoffInfo
 from .web_surfer.fara._types import StreamUpdate
-from ..types import InputRequest
 
 
 class Capability(StrEnum):

@@ -15,25 +15,21 @@ from __future__ import annotations
 
 import os
 import time
+from collections.abc import AsyncGenerator, Callable
 from pathlib import Path
-from collections.abc import Callable
 from typing import (
     TYPE_CHECKING,
-    AsyncGenerator,
     Any,
-    Optional,
 )
+
 from loguru import logger
 
-from ...agents.web_surfer.fara._types import StreamUpdate
-from ...types import ApprovalRequest, ContinuationRequest, InputRequest, PauseController
-
-from ...task_team import get_task_team
 from ...agents.message_schemas import (
     file_generated_props,
     input_request_props,
     system_props,
 )
+from ...agents.web_surfer.fara._types import StreamUpdate
 from ...magentic_ui_config import (
     AgentMode,
     HarnessConfig,
@@ -42,18 +38,20 @@ from ...magentic_ui_config import (
 )
 from ...sandbox._path_normalizer import extract_dir_basename, normalize_host_path
 from ...sandbox._path_validator import validate_host_path
+from ...task_team import get_task_team
+from ...types import ApprovalRequest, ContinuationRequest, InputRequest, PauseController
 from ..datamodel import Settings
 from ..datamodel.db import Run
-from ..utils.utils import get_modified_files, ModifiedFileInfo
+from ..utils.utils import ModifiedFileInfo, get_modified_files
 from ._upload_validation import validate_uploaded_files
 
 if TYPE_CHECKING:
     from ...agents.base import SubAgentProtocol
     from ...teams.omniagent._omni_agent import OmniAgent
-    from ..database import DatabaseManager
     from ...tools.playwright.browser.quicksand_browser_manager import (
         QuicksandBrowserManager,
     )
+    from ..database import DatabaseManager
 
 
 def _file_to_ws(f: ModifiedFileInfo) -> dict[str, Any]:
@@ -109,10 +107,10 @@ class TeamManager:
         self,
         app_dir: Path,
         config: MagenticUIConfig | None = None,
-        quicksand_manager: "QuicksandBrowserManager | None" = None,
-        db_manager: "DatabaseManager | None" = None,
+        quicksand_manager: QuicksandBrowserManager | None = None,
+        db_manager: DatabaseManager | None = None,
     ) -> None:
-        self.agent: "SubAgentProtocol | OmniAgent | None" = None
+        self.agent: SubAgentProtocol | OmniAgent | None = None
         self.app_dir = app_dir
         self.config = config
         self._quicksand_manager = quicksand_manager
@@ -145,7 +143,7 @@ class TeamManager:
     def set_uploaded_file_infos(
         self,
         attached_files: list[dict[str, Any]],
-        run: Optional[Run] = None,
+        run: Run | None = None,
     ) -> None:
         """Record validated upload metadata for the end-of-run summary.
 
@@ -159,7 +157,7 @@ class TeamManager:
     def add_uploaded_files(
         self,
         attached_files: list[dict[str, Any]],
-        run: Optional[Run] = None,
+        run: Run | None = None,
     ) -> list[dict[str, Any]]:
         """Register validated mid-run uploads and return safe refs.
 
@@ -179,7 +177,7 @@ class TeamManager:
 
     def prepare_host_run_dir(
         self,
-        run: Optional[Run] = None,
+        run: Run | None = None,
     ) -> Path:
         """Prepare and return the host-side run directory.
 
@@ -284,14 +282,14 @@ class TeamManager:
                     f"Out-of-range {sub_name}.max_rounds in DB ({value}); ignoring"
                 )
                 continue
-            setattr(getattr(merged, sub_name), "max_rounds", value)
+            getattr(merged, sub_name).max_rounds = value
         return merged
 
     async def _create_agent(
         self,
         host_run_dir: Path,
-        run: Optional[Run] = None,
-    ) -> "SubAgentProtocol | OmniAgent":
+        run: Run | None = None,
+    ) -> SubAgentProtocol | OmniAgent:
         """Create agent with config from DB.
 
         When ``run`` is supplied, the resolved ``agent_mode`` is also
@@ -391,7 +389,7 @@ class TeamManager:
     async def run_stream(
         self,
         task: str,
-        run: Optional[Run] = None,
+        run: Run | None = None,
         mount_dirs: list[str] | None = None,
     ) -> AsyncGenerator[Any, None]:
         # TODO: Narrow return type to AsyncGenerator[StreamUpdate, None]

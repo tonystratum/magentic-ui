@@ -12,7 +12,6 @@ from magentic_ui.teams.omniagent._command_policy import (
     classify_sensitive_read,
 )
 
-
 # ===================================================================
 # ALLOW — read-only, no-side-effect commands
 # ===================================================================
@@ -220,9 +219,9 @@ class TestRequireApproval:
     def test_require_approval(self, cmd: str, category: ApprovalCategory) -> None:
         result = classify_bash_command(cmd)
         assert result.verdict == CommandVerdict.REQUIRE_APPROVAL, f"{cmd!r} → {result}"
-        assert (
-            result.category == category
-        ), f"{cmd!r}: expected {category}, got {result.category}"
+        assert result.category == category, (
+            f"{cmd!r}: expected {category}, got {result.category}"
+        )
 
     def test_unrecognized_command_defaults_to_approval(self) -> None:
         """Unknown commands should default to REQUIRE_APPROVAL (fail safe)."""

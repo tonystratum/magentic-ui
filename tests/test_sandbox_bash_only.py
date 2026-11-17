@@ -25,6 +25,6 @@ async def test_bash_only_skips_requirements_install(tmp_path: Path) -> None:
     finally:
         await sb.__aexit__(None, None, None)
 
-    assert (
-        result.exit_code != 0
-    ), "bash_only=True must not install markitdown into the sandbox venv"
+    assert result.exit_code != 0, (
+        "bash_only=True must not install markitdown into the sandbox venv"
+    )

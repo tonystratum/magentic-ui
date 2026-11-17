@@ -3,19 +3,19 @@ from __future__ import annotations
 
 import logging
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Optional
 from pathlib import Path
+from typing import TYPE_CHECKING
+
 from fastapi import HTTPException, status
 from pydantic import ValidationError
-
-from ..database import DatabaseManager
-from .config import settings
-from .managers.connection import WebSocketManager
 
 from ...magentic_ui_config import (
     MagenticUIConfig,
     QuicksandSandboxConfig,
 )
+from ..database import DatabaseManager
+from .config import settings
+from .managers.connection import WebSocketManager
 
 if TYPE_CHECKING:
     from ...tools.playwright.browser.quicksand_browser_manager import (
@@ -25,12 +25,12 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 # Global manager instances
-_db_manager: Optional[DatabaseManager] = None
-_websocket_manager: Optional[WebSocketManager] = None
-_quicksand_manager: Optional["QuicksandBrowserManager"] = None
+_db_manager: DatabaseManager | None = None
+_websocket_manager: WebSocketManager | None = None
+_quicksand_manager: QuicksandBrowserManager | None = None
 
 
-async def wait_for_quicksand() -> Optional["QuicksandBrowserManager"]:
+async def wait_for_quicksand() -> QuicksandBrowserManager | None:
     """Return quicksand manager if configured and started, else None."""
     if _quicksand_manager is None or not _quicksand_manager.is_ready:
         return None
@@ -51,7 +51,7 @@ def get_db_context():
     try:
         yield _db_manager
     except Exception as e:
-        logger.error(f"Database operation failed: {str(e)}")
+        logger.error(f"Database operation failed: {e!s}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Database operation failed",
@@ -166,7 +166,7 @@ async def init_managers(
         logger.info("Connection manager initialized")
 
     except Exception as e:
-        logger.error(f"Failed to initialize managers: {str(e)}")
+        logger.error(f"Failed to initialize managers: {e!s}")
         await cleanup_managers()  # Cleanup any partially initialized managers
         raise
 
@@ -182,7 +182,7 @@ async def cleanup_managers() -> None:
         try:
             await _websocket_manager.cleanup()
         except Exception as e:
-            logger.error(f"Error cleaning up connection manager: {str(e)}")
+            logger.error(f"Error cleaning up connection manager: {e!s}")
         finally:
             _websocket_manager = None
 
@@ -203,7 +203,7 @@ async def cleanup_managers() -> None:
         try:
             await _db_manager.close()
         except Exception as e:
-            logger.error(f"Error cleaning up database manager: {str(e)}")
+            logger.error(f"Error cleaning up database manager: {e!s}")
         finally:
             _db_manager = None
 

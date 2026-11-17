@@ -15,7 +15,7 @@ import json
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, List, Tuple
+from typing import Any
 from urllib.parse import quote_plus
 
 import openai
@@ -33,7 +33,6 @@ from tenacity import (
 from ...._ai_client import create_openai_client, is_retryable_model_error
 from ._prompts import get_computer_use_system_prompt
 from ._types import BrowserEnvironment, ImageObj, LLMMessage
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -205,7 +204,7 @@ class FaraQwen3Agent:
         task: str,
         user_response: str = "",
         output_dir: str | Path | None = None,
-    ) -> Tuple[str, List[str], List[str]]:
+    ) -> tuple[str, list[str], list[str]]:
         """Run the agent loop.
 
         Supports resuming: if ``_state.chat_history`` is already populated,
@@ -245,8 +244,8 @@ class FaraQwen3Agent:
             )
             start_step = 0
 
-        all_actions: List[str] = []
-        all_observations: List[str] = []
+        all_actions: list[str] = []
+        all_observations: list[str] = []
         final_answer = "<no_answer>"
 
         for i in range(self.config.max_rounds):
@@ -342,7 +341,7 @@ class FaraQwen3Agent:
 
     def _get_system_message(
         self, screenshot: Image.Image
-    ) -> Tuple[List[LLMMessage], Image.Image]:
+    ) -> tuple[list[LLMMessage], Image.Image]:
         """Build system messages with tool definitions."""
         assert self._state is not None
         system_prompt_info = get_computer_use_system_prompt(
@@ -361,7 +360,7 @@ class FaraQwen3Agent:
             Image.Resampling.LANCZOS,
         )
 
-        system_messages: List[LLMMessage] = []
+        system_messages: list[LLMMessage] = []
         for msg in system_prompt_info["conversation"]:
             text = "".join(content["text"] for content in msg["content"])
             system_messages.append(LLMMessage(role="system", content=text))
@@ -388,7 +387,7 @@ class FaraQwen3Agent:
     )
     async def _make_model_call(
         self,
-        history: List[LLMMessage],
+        history: list[LLMMessage],
         extra_create_args: dict[str, Any] | None = None,
     ) -> str:
         """Call the LLM and return the response text.
@@ -426,7 +425,7 @@ class FaraQwen3Agent:
         is_first_round: bool,
         first_screenshot: Image.Image | None = None,
         user_response: str = "",
-    ) -> Tuple[dict[str, Any], str]:
+    ) -> tuple[dict[str, Any], str]:
         """Build messages, call LLM, parse response.
 
         Returns (action_dict, raw_response).
@@ -487,7 +486,7 @@ class FaraQwen3Agent:
     # Parsing
     # ------------------------------------------------------------------
 
-    def _parse_thoughts_and_action(self, message: str) -> Tuple[str, dict[str, Any]]:
+    def _parse_thoughts_and_action(self, message: str) -> tuple[str, dict[str, Any]]:
         """Parse ``thoughts\\n<tool_call>\\n{json}\\n</tool_call>``."""
         try:
             parts = message.split("<tool_call>\n")
@@ -514,24 +513,24 @@ class FaraQwen3Agent:
 
     def convert_resized_coords_to_original(
         self,
-        coords: List[float],
+        coords: list[float],
         rsz_w: int,
         rsz_h: int,
         og_w: int,
         og_h: int,
-    ) -> List[float]:
+    ) -> list[float]:
         scale_x = og_w / rsz_w
         scale_y = og_h / rsz_h
         return [coords[0] * scale_x, coords[1] * scale_y]
 
     def proc_coords(
         self,
-        coords: List[float] | None,
+        coords: list[float] | None,
         im_w: int,
         im_h: int,
         og_im_w: int | None = None,
         og_im_h: int | None = None,
-    ) -> List[float] | None:
+    ) -> list[float] | None:
         if not coords:
             return coords
         if og_im_w is None:
@@ -564,9 +563,9 @@ class FaraQwen3Agent:
 
     def maybe_remove_old_screenshots(
         self,
-        history: List[LLMMessage],
+        history: list[LLMMessage],
         includes_current: bool = False,
-    ) -> List[LLMMessage]:
+    ) -> list[LLMMessage]:
         """Remove old screenshots from the chat history."""
         if self.config.max_n_images <= 0:
             return history
@@ -576,7 +575,7 @@ class FaraQwen3Agent:
             if includes_current
             else self.config.max_n_images - 1
         )
-        new_history: List[LLMMessage] = []
+        new_history: list[LLMMessage] = []
         n_images = 0
 
         for i in range(len(history) - 1, -1, -1):
@@ -621,7 +620,7 @@ class FaraQwen3Agent:
 
     async def _execute_action(
         self, env: BrowserEnvironment, args: dict[str, Any]
-    ) -> Tuple[bool, str]:
+    ) -> tuple[bool, str]:
         """Execute an action. Returns (is_stop, description)."""
         # Scale coordinates from DISPLAY_SIZE to viewport
         if "coordinate" in args:
@@ -643,9 +642,7 @@ class FaraQwen3Agent:
             if url.startswith(("https://", "http://", "file://", "about:")):
                 await env.goto(url)
             elif " " in url:
-                await env.goto(
-                    f"https://www.google.com/search?q={quote_plus(url)}"
-                )
+                await env.goto(f"https://www.google.com/search?q={quote_plus(url)}")
             else:
                 await env.goto("https://" + url)
 
@@ -738,7 +735,7 @@ class FaraQwen3Agent:
             if action_type != "pause_and_memorize_fact":
                 try:
                     await env.wait_for_load(state="domcontentloaded", timeout=20000)
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     pass
                 await asyncio.sleep(3)
 

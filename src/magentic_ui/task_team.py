@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 from ._ai_client import create_client
 from .agents.base import Capability, SubAgentProtocol
@@ -20,13 +20,13 @@ if TYPE_CHECKING:
 
 
 async def get_task_team(
-    magentic_ui_config: Optional[MagenticUIConfig] = None,
+    magentic_ui_config: MagenticUIConfig | None = None,
     *,
     host_run_dir: Path,
     pause_controller: PauseController | None = None,
-    quicksand_manager: "QuicksandBrowserManager | None" = None,
+    quicksand_manager: QuicksandBrowserManager | None = None,
     session_id: str | None = None,
-) -> Union[SubAgentProtocol, OmniAgent]:
+) -> SubAgentProtocol | OmniAgent:
     """Create and return an agent.
 
     Behavior depends on ``agent_mode``:

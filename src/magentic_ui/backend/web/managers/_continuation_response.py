@@ -15,7 +15,7 @@ def normalize_continuation_decision(response: str) -> str:
 
 
 async def save_continuation_response(
-    manager: "WebSocketManager",
+    manager: WebSocketManager,
     run_id: int,
     content: str,
     decision: str,

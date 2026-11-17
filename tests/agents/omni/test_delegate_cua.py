@@ -20,12 +20,11 @@ from magentic_ui.magentic_ui_config import ApprovalPolicy
 from magentic_ui.sandbox._null import NullSandbox
 from magentic_ui.teams.omniagent._omni_agent import OmniAgent
 from magentic_ui.teams.omniagent._registry import (
-    DELEGATE_CUA_DEF,
     _DELEGATE_CUA_FILE_PREVIEW_CHARS,
     _DELEGATE_CUA_FILES_TOTAL_CHARS,
+    DELEGATE_CUA_DEF,
     build_delegate_cua_task,
 )
-
 
 # ---------------------------------------------------------------------------
 # Schema shape

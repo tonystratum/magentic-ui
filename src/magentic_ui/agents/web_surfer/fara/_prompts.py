@@ -1,7 +1,6 @@
 import copy
 import math
 from datetime import datetime
-from typing import Union, Tuple
 
 from .qwen_helpers.base_tool import BaseTool
 from .qwen_helpers.fncall_prompt import NousFnCallPrompt
@@ -130,7 +129,7 @@ The action to perform. The available actions are:
             self.parameters["properties"].pop("delete_existing_text", None)
         super().__init__(cfg)
 
-    def call(self, params: Union[str, dict], **kwargs):
+    def call(self, params: str | dict, **kwargs):
         params = self._verify_json_format_args(params)
         action = params["action"]
         if action == "key":
@@ -161,13 +160,13 @@ The action to perform. The available actions are:
     def _key(self, text: str):
         raise NotImplementedError()
 
-    def _click(self, coordinate: Tuple[int, int]):
+    def _click(self, coordinate: tuple[int, int]):
         raise NotImplementedError()
 
-    def _long_press(self, coordinate: Tuple[int, int], time: int):
+    def _long_press(self, coordinate: tuple[int, int], time: int):
         raise NotImplementedError()
 
-    def _swipe(self, coordinate: Tuple[int, int], coordinate2: Tuple[int, int]):
+    def _swipe(self, coordinate: tuple[int, int], coordinate2: tuple[int, int]):
         raise NotImplementedError()
 
     def _type(self, text: str):
@@ -308,7 +307,7 @@ The action to perform. The available actions are:
         cfg.pop("include_input_text_key_args", None)
         super().__init__(cfg)
 
-    def call(self, params: Union[str, dict], **kwargs):
+    def call(self, params: str | dict, **kwargs):
         raise NotImplementedError("FaraNextBrowserComputerUse is schema-only.")
 
 

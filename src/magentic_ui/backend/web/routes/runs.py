@@ -1,15 +1,14 @@
 # /api/runs routes
-from typing import Dict, List
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from loguru import logger
+from pydantic import BaseModel
 
 from ...datamodel import Message, Run, RunStatus, Session
-from ..deps import get_db, get_websocket_manager
 from ...teammanager import TeamManager
 from ...utils.utils import find_available_filename, sanitize_filename
+from ..deps import get_db, get_websocket_manager
 
 router = APIRouter()
 
@@ -23,7 +22,7 @@ class CreateRunRequest(BaseModel):
 async def create_run(
     request: CreateRunRequest,
     db=Depends(get_db),
-) -> Dict:
+) -> dict:
     """Return the existing run for a session or create a new one"""
     # First check if session exists and belongs to user
     session_response = db.get(
@@ -46,7 +45,7 @@ async def create_run(
         try:
             run_response = db.upsert(
                 Run(
-                    created_at=datetime.now(timezone.utc),
+                    created_at=datetime.now(UTC),
                     session_id=request.session_id,
                     status=RunStatus.CREATED,
                     user_id=request.user_id,
@@ -72,7 +71,7 @@ async def create_run(
 
 
 @router.get("/{run_id}")
-async def get_run(run_id: int, db=Depends(get_db)) -> Dict:
+async def get_run(run_id: int, db=Depends(get_db)) -> dict:
     """Get run details including task and result"""
     run = db.get(Run, filters={"id": run_id}, return_json=False)
     if not run.status or not run.data:
@@ -82,7 +81,7 @@ async def get_run(run_id: int, db=Depends(get_db)) -> Dict:
 
 
 @router.get("/{run_id}/messages")
-async def get_run_messages(run_id: int, db=Depends(get_db)) -> Dict:
+async def get_run_messages(run_id: int, db=Depends(get_db)) -> dict:
     """Get all messages for a run"""
     messages = db.get(
         Message, filters={"run_id": run_id}, order="created_at asc", return_json=False
@@ -94,10 +93,10 @@ async def get_run_messages(run_id: int, db=Depends(get_db)) -> Dict:
 @router.post("/{run_id}/upload")
 async def upload_files(
     run_id: int,
-    files: List[UploadFile] = File(...),
+    files: list[UploadFile] = File(...),
     db=Depends(get_db),
     ws_manager=Depends(get_websocket_manager),
-) -> Dict:
+) -> dict:
     """Upload files for a specific run and save them to the run directory"""
     # Verify run exists
     run_response = db.get(Run, filters={"id": run_id}, return_json=False)
@@ -116,7 +115,7 @@ async def upload_files(
     host_run_dir = team_manager.prepare_host_run_dir(run=run)
 
     uploaded_files = []
-    batch_names: List[str] = []
+    batch_names: list[str] = []
 
     for file in files:
         # Save file to run directory

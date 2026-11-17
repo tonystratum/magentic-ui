@@ -1,7 +1,8 @@
-from typing import Dict, List, Any
+from logging import getLogger
+from typing import Any
+
 from playwright.async_api import BrowserContext, Page, StorageState
 from pydantic import BaseModel
-from logging import getLogger
 
 logger = getLogger(__name__)
 
@@ -24,7 +25,7 @@ class BrowserState(BaseModel):
 
     state: Any  # type: ignore
     # originally: state: StorageState (TypedDict from Playwright, not compatible with Pydantic on Python < 3.12)
-    tabs: List[Tab]
+    tabs: list[Tab]
     activeTabIndex: int
 
 
@@ -59,13 +60,13 @@ async def save_browser_state(
         await context.storage_state() if not simplified else StorageState(origins=[])
     )
 
-    open_tabs: List[Tab] = []
+    open_tabs: list[Tab] = []
     for i, page in enumerate(context.pages):
         if simplified:
             sx, sy = 0, 0
         else:
             try:
-                scroll: Dict[str, int] = await page.evaluate(
+                scroll: dict[str, int] = await page.evaluate(
                     "() => ({ scrollX: window.scrollX, scrollY: window.scrollY })"
                 )
                 # Cast values to int to avoid float issues
@@ -108,8 +109,8 @@ async def load_browser_state(
             if page.url == "about:blank":
                 await page.close()
 
-        restored_tabs: List[str] = []
-        pages: List[Page] = []
+        restored_tabs: list[str] = []
+        pages: list[Page] = []
 
         # Determine which tabs to restore
         tabs_to_restore = (

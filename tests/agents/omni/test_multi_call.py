@@ -24,7 +24,6 @@ from magentic_ui.sandbox._null import NullSandbox
 from magentic_ui.teams.omniagent._omni_agent import OmniAgent
 from magentic_ui.types import ApprovalRequest, InputRequest
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

@@ -27,7 +27,6 @@ from magentic_ui.teams.omniagent._compaction import (
 )
 from magentic_ui.teams.omniagent._responses import OmniResponses
 
-
 # ---------------------------------------------------------------------------
 # Helpers — plain module-level functions, no pytest fixtures
 # ---------------------------------------------------------------------------
@@ -416,9 +415,9 @@ class TestCompactHistoryShape:
         for m in chat.messages:
             content = m.get("content", "")
             if isinstance(content, str):
-                assert not content.startswith(
-                    "<tool_response>"
-                ), f"tool_response leaked verbatim into compacted history: {content}"
+                assert not content.startswith("<tool_response>"), (
+                    f"tool_response leaked verbatim into compacted history: {content}"
+                )
 
     @pytest.mark.asyncio
     async def test_drops_tool_response_with_leading_whitespace(self):
@@ -689,7 +688,7 @@ class TestEmergencyHandler:
             m.get("role") == "user"
             and m.get("content") == "follow-up with important detail"
             for m in retry_messages
-        ), "retry dropped the triggering user input; got messages: " f"{retry_messages}"
+        ), f"retry dropped the triggering user input; got messages: {retry_messages}"
 
     @pytest.mark.asyncio
     async def test_detects_vllm_integer_code_via_message(self):
@@ -832,7 +831,7 @@ class TestStreaming:
     async def test_generating_emitted_once_first_token_arrives(self):
         """A delta event triggers exactly one ``("state", "generating")``
         before the final ``("result", text)``."""
-        from ._stream_mock import content_delta, StreamScript, install_stream_mock
+        from ._stream_mock import StreamScript, content_delta, install_stream_mock
 
         client = MagicMock()
         script = StreamScript(
@@ -864,8 +863,9 @@ class TestStreaming:
     async def test_model_slow_emitted_when_first_token_is_slow(self, monkeypatch):
         """A slow first token yields ``model_slow`` before ``generating``,
         so the UI can warn the user instead of waiting silently."""
-        from ._stream_mock import content_delta
         from magentic_ui.teams.omniagent import _responses
+
+        from ._stream_mock import content_delta
 
         monkeypatch.setattr(_responses, "_SLOW_MODEL_SECONDS", 0.01)
 
@@ -874,7 +874,7 @@ class TestStreaming:
                 self._events = [content_delta()]
                 self._first = True
 
-            def __aiter__(self) -> "_SlowStream":
+            def __aiter__(self) -> _SlowStream:
                 return self
 
             async def __anext__(self):

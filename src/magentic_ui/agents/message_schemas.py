@@ -18,8 +18,7 @@ Usage:
 
 import json
 from enum import Enum
-from typing import Any, Literal, TypedDict, NotRequired
-
+from typing import Any, Literal, NotRequired, TypedDict
 
 # =============================================================================
 # Literal types for discriminators

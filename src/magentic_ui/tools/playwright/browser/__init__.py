@@ -9,11 +9,11 @@ from .quicksand_playwright_browser import QuicksandPlaywrightBrowser
 from .utils import get_browser_resource
 
 __all__ = [
-    "PlaywrightBrowser",
-    "LocalPlaywrightBrowser",
-    "QuicksandBrowserManager",
-    "QuicksandPlaywrightBrowser",
     "BrowserSlot",
     "BrowserSlotPoolFullError",
+    "LocalPlaywrightBrowser",
+    "PlaywrightBrowser",
+    "QuicksandBrowserManager",
+    "QuicksandPlaywrightBrowser",
     "get_browser_resource",
 ]

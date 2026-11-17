@@ -166,7 +166,7 @@ class QuicksandSandbox(SandboxBase):
             logger.info("Unmounting init script")
             await self._sb.unmount(init_mount)
 
-    async def __aexit__(self, *args: Any) -> None:
+    async def __aexit__(self, *args: object) -> None:
         if self._sb is not None:
             # Wait for any pending mounts
             if self._mount_task is not None:

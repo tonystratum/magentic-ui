@@ -52,7 +52,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, NamedTuple
 
-
 # ---------------------------------------------------------------------------
 # Public types
 # ---------------------------------------------------------------------------
@@ -959,9 +958,11 @@ def _git_branch_is_read_only(args: list[str]) -> bool:
 
     saw_read_only = False
     for arg in args:
-        if arg in _BRANCH_READ_ONLY_FLAGS:
-            saw_read_only = True
-        elif arg.startswith("--format=") or arg.startswith("--sort="):
+        if (
+            arg in _BRANCH_READ_ONLY_FLAGS
+            or arg.startswith("--format=")
+            or arg.startswith("--sort=")
+        ):
             saw_read_only = True
         elif arg.startswith("-"):
             # Unknown flag — might be mutation (e.g. -d, -D, -m, -M, -c, -C)

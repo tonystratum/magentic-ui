@@ -1,7 +1,9 @@
-import os
-from pathlib import Path
-from typing import Any, List, Dict, Iterable, TypedDict
 import json
+import os
+from collections.abc import Iterable
+from pathlib import Path
+from typing import Any, TypedDict
+
 from loguru import logger
 
 
@@ -150,7 +152,7 @@ def get_file_type(file_path: str) -> str:
 
 def get_modified_files(
     start_timestamp: float, end_timestamp: float, source_dir: str
-) -> List[ModifiedFileInfo]:
+) -> list[ModifiedFileInfo]:
     """
     Identify files from source_dir that were modified within a specified timestamp range.
     The function excludes files with certain file extensions and names.
@@ -163,7 +165,7 @@ def get_modified_files(
         List[ModifiedFileInfo]: A list of typed dicts with file path, name, extension, type, and timestamp.
             Files with extensions "*.pyc", "*.cache" and names "__pycache__", "__init__.py" are ignored.
     """
-    modified_files: List[ModifiedFileInfo] = []
+    modified_files: list[ModifiedFileInfo] = []
     ignore_extensions = {".pyc", ".cache"}
     # .agent holds agent-internal output (transcripts, traces, tool outputs)
     # that shouldn't surface as user-visible generated files in the UI.
@@ -212,13 +214,13 @@ class ConstructTaskResult(TypedDict):
     """Return type for construct_task()."""
 
     agent_task: str  # Task string with file references (for the agent)
-    attached_files: List[Dict[str, Any]]  # Raw attached-file dicts (for in-process use)
+    attached_files: list[dict[str, Any]]  # Raw attached-file dicts (for in-process use)
     attached_files_json: str  # JSON string of attached file metadata (for DB/WS)
 
 
 def construct_task(
     query: str,
-    files: List[Dict[str, Any]] | None = None,
+    files: list[dict[str, Any]] | None = None,
 ) -> ConstructTaskResult:
     """Augment a task string with reference lines for uploaded files and return the attached-file metadata."""
     empty_result: ConstructTaskResult = {
@@ -229,8 +231,8 @@ def construct_task(
     if not files:
         return empty_result
 
-    extra_lines: List[str] = []
-    attached_files: List[Dict[str, Any]] = []
+    extra_lines: list[str] = []
+    attached_files: list[dict[str, Any]] = []
 
     for f in files:
         raw_name = f.get("name", "unknown.file")

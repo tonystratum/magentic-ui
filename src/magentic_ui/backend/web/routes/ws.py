@@ -4,13 +4,12 @@ import json
 from datetime import datetime
 
 import websockets
-
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from loguru import logger
 
 from ...datamodel import Run
-from ..auth import DEV_ORIGINS, WS_PROTOCOL_TAG, is_allowed_host, is_valid_token
 from .. import deps
+from ..auth import DEV_ORIGINS, WS_PROTOCOL_TAG, is_allowed_host, is_valid_token
 from ..deps import get_db, get_websocket_manager
 from ..managers import WebSocketManager
 
@@ -212,7 +211,7 @@ async def run_websocket(
     except WebSocketDisconnect:
         logger.info(f"WebSocket disconnected for run {run_id}")
     except Exception as e:
-        logger.error(f"WebSocket error: {str(e)}")
+        logger.error(f"WebSocket error: {e!s}")
     finally:
         await ws_manager.disconnect(run_id, ws=websocket)
 

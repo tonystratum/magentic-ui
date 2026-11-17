@@ -2,9 +2,7 @@
 
 import json
 import re
-
 from typing import Any
-
 
 CHINESE_CHAR_RE = re.compile(r"[\u4e00-\u9fff]")
 

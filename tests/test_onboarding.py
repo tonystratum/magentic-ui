@@ -1,15 +1,15 @@
 """Tests for onboarding route helpers."""
 
 from magentic_ui.backend.web.routes.onboarding import (
+    API_KEY_MASKED,
     ModelEndpointInput,
     _build_client_dict,
-    API_KEY_MASKED,
     _is_onboarding_complete,
+    _mask_client_dict,
     _required_roles,
     _resolve_masked_key,
-    _mask_client_dict,
 )
-from magentic_ui.magentic_ui_config import AgentMode, ROLE_DEFAULTS
+from magentic_ui.magentic_ui_config import ROLE_DEFAULTS, AgentMode
 
 
 class TestBuildClientDict:

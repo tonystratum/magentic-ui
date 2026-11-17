@@ -7,8 +7,6 @@ Each folder is stored as an independent database row, allowing
 concurrent add/remove without read-modify-write conflicts.
 """
 
-from typing import Dict, List
-
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
@@ -26,12 +24,12 @@ class TrustedFolderCreate(BaseModel):
 
 
 @router.get("/")
-async def list_trusted_folders(user_id: str, db=Depends(get_db)) -> Dict:
+async def list_trusted_folders(user_id: str, db=Depends(get_db)) -> dict:
     """List all trusted folders for a user."""
     response = db.get(TrustedFolder, filters={"user_id": user_id})
     if not response.status:
         raise HTTPException(status_code=500, detail=response.message)
-    folders: List[Dict] = []
+    folders: list[dict] = []
     if response.data:
         folders = [{"id": f.id, "name": f.name, "path": f.path} for f in response.data]
     return {"status": True, "data": folders}
@@ -40,7 +38,7 @@ async def list_trusted_folders(user_id: str, db=Depends(get_db)) -> Dict:
 @router.post("/")
 async def add_trusted_folder(
     user_id: str, body: TrustedFolderCreate, db=Depends(get_db)
-) -> Dict:
+) -> dict:
     """Add a folder to the trusted list. Skips if path already exists."""
     # Check for duplicate
     existing = db.get(TrustedFolder, filters={"user_id": user_id, "path": body.path})
@@ -76,7 +74,7 @@ async def add_trusted_folder(
 @router.delete("/{folder_id}")
 async def remove_trusted_folder(
     user_id: str, folder_id: int, db=Depends(get_db)
-) -> Dict:
+) -> dict:
     """Remove a folder from the trusted list by ID, scoped to user."""
     response = db.delete(TrustedFolder, filters={"id": folder_id, "user_id": user_id})
     message = getattr(response, "message", "") or ""

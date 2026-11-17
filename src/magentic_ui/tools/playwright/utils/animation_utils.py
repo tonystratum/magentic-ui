@@ -1,6 +1,6 @@
-from typing import Tuple
-from playwright.async_api import Page
 import asyncio
+
+from playwright.async_api import Page
 
 
 class AnimationUtilsPlaywright:
@@ -9,7 +9,7 @@ class AnimationUtilsPlaywright:
     """
 
     def __init__(self) -> None:
-        self.last_cursor_position: Tuple[float, float] = (0.0, 0.0)
+        self.last_cursor_position: tuple[float, float] = (0.0, 0.0)
 
     async def add_cursor_box(self, page: Page, identifier: str) -> None:
         """

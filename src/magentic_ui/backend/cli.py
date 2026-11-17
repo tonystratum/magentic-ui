@@ -1,12 +1,12 @@
+import logging
 import os
 import subprocess
 import warnings
+from pathlib import Path
+from typing import Annotated
+
 import typer
 import uvicorn
-from typing_extensions import Annotated
-from typing import Optional
-from pathlib import Path
-import logging
 
 from ..version import VERSION
 
@@ -57,13 +57,13 @@ def main(
         str(Path.home() / ".magentic_ui"),
         help="Path to the app directory where files are stored.",
     ),
-    database_uri: Optional[str] = typer.Option(
+    database_uri: str | None = typer.Option(
         None, "--database-uri", help="Database URI to connect to."
     ),
     upgrade_database: bool = typer.Option(
         False, "--upgrade-database", help="Upgrade the database schema on startup."
     ),
-    config: Optional[str] = typer.Option(
+    config: str | None = typer.Option(
         None, "--config", help="Path to the config file."
     ),
     version: bool = typer.Option(
@@ -121,9 +121,9 @@ def run_ui(
     reload: bool,
     docs: bool,
     appdir: str,
-    database_uri: Optional[str],
+    database_uri: str | None,
     upgrade_database: bool,
-    config: Optional[str],
+    config: str | None,
     fara_agent: bool,
     reset_config: bool = False,
     tunnel: bool = False,
@@ -172,8 +172,7 @@ def run_ui(
     # session token all live in per-process memory).
     env_file_path = get_env_file_path()
     with open(env_file_path, "w") as temp_env:
-        for key, value in env_vars.items():
-            temp_env.write(f"{key}={value}\n")
+        temp_env.writelines(f"{key}={value}\n" for key, value in env_vars.items())
 
     # The backend rejects other Host headers with 400, hence --http-host-header.
     tunnel_proc = (
@@ -216,9 +215,9 @@ def ui(
     reload: Annotated[bool, typer.Option("--reload")] = False,
     docs: bool = True,
     appdir: str = str(Path.home() / ".magentic_ui"),
-    database_uri: Optional[str] = None,
+    database_uri: str | None = None,
     upgrade_database: bool = False,
-    config: Optional[str] = None,
+    config: str | None = None,
     fara_agent: Annotated[
         bool,
         typer.Option(
@@ -259,9 +258,9 @@ def help():
     Show help information about available commands and options.
     """
     # Use a system call to run the command with --help
+    import os
     import subprocess
     import sys
-    import os
 
     # Get the command that was used to run this script
     command = os.path.basename(sys.argv[0])

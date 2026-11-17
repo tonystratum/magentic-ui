@@ -148,7 +148,7 @@ class FaraQwen3NextAgent(FaraQwen3Agent):
                 # See FaraQwen3Agent._execute_action for full rationale.
                 try:
                     await env.wait_for_load(state="domcontentloaded", timeout=20000)
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     pass
                 await asyncio.sleep(3)
 

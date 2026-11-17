@@ -32,7 +32,6 @@ from loguru import logger
 
 from ._path_normalizer import get_home, get_runtime_home
 
-
 # Sensitive locations relative to the user's home directory (the one
 # returned by ``get_home()`` — on WSL this is the Windows user profile,
 # so entries like ``.ssh`` end up protecting ``/mnt/c/Users/<u>/.ssh``).
@@ -253,8 +252,7 @@ def validate_host_path(path: str) -> str:
         and safe_parts[5].lower() == "appdata"
     ):
         raise ValueError(
-            f"Host path is denied (Windows AppData): {path!r} "
-            f"(resolved: {str(safe)!r})"
+            f"Host path is denied (Windows AppData): {path!r} (resolved: {str(safe)!r})"
         )
 
     if not safe.exists():

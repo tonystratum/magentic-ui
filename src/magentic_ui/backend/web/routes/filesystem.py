@@ -9,9 +9,8 @@ browse and select folders (full path) without needing a native dialog.
 import errno
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
 from loguru import logger
@@ -117,7 +116,7 @@ def _permission_denied_detail(path: Path) -> str:
     return "Permission denied"
 
 
-def _entry_info(entry: os.DirEntry) -> Optional[Dict]:
+def _entry_info(entry: os.DirEntry) -> dict | None:
     """Extract metadata from a directory entry. Returns None for entries
     that should be skipped (unreadable, special files, or symlinks
     that resolve outside the user's home directory)."""
@@ -139,9 +138,9 @@ def _entry_info(entry: os.DirEntry) -> Optional[Dict]:
             return None
 
         stat = entry.stat(follow_symlinks=True)
-        modified = datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat()
+        modified = datetime.fromtimestamp(stat.st_mtime, tz=UTC).isoformat()
 
-        info: Dict = {
+        info: dict = {
             "name": name,
             "type": "directory" if is_dir else "file",
             "modified": modified,
@@ -155,7 +154,7 @@ def _entry_info(entry: os.DirEntry) -> Optional[Dict]:
 
 
 @router.get("/roots")
-async def get_roots() -> Dict:
+async def get_roots() -> dict:
     """Get the user's home directory path.
 
     On WSL, returns the Windows user profile directory.
@@ -174,12 +173,12 @@ async def get_roots() -> Dict:
 async def list_directory(
     path: str = Query(..., description="Absolute directory path to list"),
     show_hidden: bool = Query(False, description="Include hidden files/dirs"),
-) -> Dict:
+) -> dict:
     """List contents of a directory."""
     resolved = _resolve_path(path)
     logger.debug(f"Listing directory: {resolved}")
 
-    entries: List[Dict] = []
+    entries: list[dict] = []
     try:
         with os.scandir(resolved) as scanner:
             for entry in scanner:

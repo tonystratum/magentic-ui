@@ -15,8 +15,8 @@ three exit paths from the new ``while True`` loop in ``run_stream``:
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from pathlib import Path
-from typing import AsyncIterator
 from unittest.mock import MagicMock
 
 import pytest
@@ -177,9 +177,9 @@ async def test_continuation_continue_resets_counter(tmp_path: Path) -> None:
         "Expected a final_answer without max_rounds_reached after Continue "
         "(the agent should reach <answer> in round 2)"
     )
-    assert (
-        client.chat.completions.stream.call_count == 2
-    ), "Expected exactly 2 LLM calls (one per batch)"
+    assert client.chat.completions.stream.call_count == 2, (
+        "Expected exactly 2 LLM calls (one per batch)"
+    )
 
 
 @pytest.mark.asyncio

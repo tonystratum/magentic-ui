@@ -1,16 +1,16 @@
 from __future__ import annotations
+
 import asyncio
-from types import TracebackType
-from typing import AsyncContextManager, Optional, Type
-from typing_extensions import Self
 from abc import ABC, abstractmethod
-from playwright.async_api import (
-    BrowserContext,
-    Playwright,
-    Browser,
-)
+from types import TracebackType
+from typing import AsyncContextManager, Self
 
 from loguru import logger
+from playwright.async_api import (
+    Browser,
+    BrowserContext,
+    Playwright,
+)
 
 
 async def connect_browser_with_retry(
@@ -68,14 +68,12 @@ class PlaywrightBrowser(AsyncContextManager["PlaywrightBrowser"], ABC):
         """
         Start the browser resource.
         """
-        pass
 
     @abstractmethod
     async def _close(self) -> None:
         """
         Close the browser resource.
         """
-        pass
 
     # Expose playwright context
     @property
@@ -84,7 +82,6 @@ class PlaywrightBrowser(AsyncContextManager["PlaywrightBrowser"], ABC):
         """
         Return the Playwright browser context.
         """
-        pass
 
     async def __aenter__(self) -> Self:
         """
@@ -98,9 +95,9 @@ class PlaywrightBrowser(AsyncContextManager["PlaywrightBrowser"], ABC):
 
     async def __aexit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
     ) -> None:
         """Stop the browser.
 

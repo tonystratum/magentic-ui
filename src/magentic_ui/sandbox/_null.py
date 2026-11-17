@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import subprocess
 from pathlib import Path
-from typing import Any
 
 from . import ExecuteResult, Mount
 from ._local import LocalSandboxBase
@@ -39,7 +38,7 @@ class NullSandbox(LocalSandboxBase):
         self._mounts = [Mount(self._workspace, self._workspace)]
         return self
 
-    async def __aexit__(self, *args: Any) -> None:
+    async def __aexit__(self, *args: object) -> None:
         await super().__aexit__(*args)
 
     async def execute(

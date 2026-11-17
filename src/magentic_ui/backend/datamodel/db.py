@@ -1,8 +1,8 @@
 # defines how core data types are serialized and stored in the database
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, List, Optional, Union
+from typing import Any
 
 from pydantic import field_serializer
 from sqlalchemy import Boolean, ForeignKey, Integer, UniqueConstraint
@@ -21,10 +21,10 @@ def _utc_now() -> datetime:
     UTC, so the read-side serializer can safely treat naive datetimes (SQLite
     drops tzinfo on read) as UTC without shifting them.
     """
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
-def _serialize_utc(value: Any) -> Optional[str]:
+def _serialize_utc(value: Any) -> str | None:
     """Serialize a datetime as an ISO-8601 UTC string.
 
     SQLite drops tzinfo on `DateTime(timezone=True)` columns, so values written
@@ -39,15 +39,15 @@ def _serialize_utc(value: Any) -> Optional[str]:
     if not isinstance(value, datetime):
         return None
     if value.tzinfo is None:
-        value = value.replace(tzinfo=timezone.utc)
+        value = value.replace(tzinfo=UTC)
     else:
-        value = value.astimezone(timezone.utc)
+        value = value.astimezone(UTC)
     return value.isoformat()
 
 
 class Message(SQLModel, table=True):
     __table_args__ = {"sqlite_autoincrement": True}
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), server_default=func.now()),
     )  # pylint: disable=not-callable
@@ -55,32 +55,32 @@ class Message(SQLModel, table=True):
         default_factory=_utc_now,
         sa_column=Column(DateTime(timezone=True), onupdate=func.now()),
     )  # pylint: disable=not-callable
-    user_id: Optional[str] = None
-    version: Optional[str] = "0.0.1"
-    config: Union[MessageConfig, dict[str, Any]] = Field(
+    user_id: str | None = None
+    version: str | None = "0.0.1"
+    config: MessageConfig | dict[str, Any] = Field(
         default_factory=lambda: MessageConfig(source="", content=""),
         sa_column=Column(JSON),
     )
-    session_id: Optional[int] = Field(
+    session_id: int | None = Field(
         default=None,
         sa_column=Column(Integer, ForeignKey("session.id", ondelete="CASCADE")),
     )
-    run_id: Optional[int] = Field(
+    run_id: int | None = Field(
         default=None,
         sa_column=Column(Integer, ForeignKey("run.id", ondelete="CASCADE")),
     )
-    message_meta: Optional[Union[MessageMeta, dict[str, Any]]] = Field(
+    message_meta: MessageMeta | dict[str, Any] | None = Field(
         default={}, sa_column=Column(JSON)
     )
 
     @field_serializer("created_at", "updated_at", when_used="json")
-    def serialize_datetime(self, value: datetime) -> Optional[str]:
+    def serialize_datetime(self, value: datetime) -> str | None:
         return _serialize_utc(value)
 
 
 class Session(SQLModel, table=True):
     __table_args__ = {"sqlite_autoincrement": True}
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), server_default=func.now()),
     )  # pylint: disable=not-callable
@@ -88,15 +88,15 @@ class Session(SQLModel, table=True):
         default_factory=_utc_now,
         sa_column=Column(DateTime(timezone=True), onupdate=func.now()),
     )  # pylint: disable=not-callable
-    user_id: Optional[str] = None
-    version: Optional[str] = "0.0.1"
-    name: Optional[str] = None
-    selected_mcp_configs: Optional[List[dict[str, Any]]] = Field(
+    user_id: str | None = None
+    version: str | None = "0.0.1"
+    name: str | None = None
+    selected_mcp_configs: list[dict[str, Any]] | None = Field(
         default_factory=list, sa_column=Column(JSON)
     )
 
     @field_serializer("created_at", "updated_at", when_used="json")
-    def serialize_datetime(self, value: datetime) -> Optional[str]:
+    def serialize_datetime(self, value: datetime) -> str | None:
         return _serialize_utc(value)
 
 
@@ -120,7 +120,7 @@ class Run(SQLModel, table=True):
 
     __table_args__ = {"sqlite_autoincrement": True}
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), server_default=func.now()),
     )
@@ -128,7 +128,7 @@ class Run(SQLModel, table=True):
         default_factory=_utc_now,
         sa_column=Column(DateTime(timezone=True), onupdate=func.now()),
     )
-    session_id: Optional[int] = Field(
+    session_id: int | None = Field(
         default=None,
         sa_column=Column(
             Integer, ForeignKey("session.id", ondelete="CASCADE"), nullable=False
@@ -137,41 +137,39 @@ class Run(SQLModel, table=True):
     status: RunStatus = Field(default=RunStatus.CREATED)
 
     # Store the original user task
-    task: Union[MessageConfig, dict[str, Any]] = Field(
+    task: MessageConfig | dict[str, Any] = Field(
         default_factory=lambda: MessageConfig(source="", content=""),
         sa_column=Column(JSON),
     )
 
-    team_result: Optional[dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
+    team_result: dict[str, Any] | None = Field(default=None, sa_column=Column(JSON))
 
-    error_message: Optional[str] = None
-    version: Optional[str] = "0.0.1"
-    messages: Union[List[Message], List[dict[str, Any]]] = Field(
+    error_message: str | None = None
+    version: str | None = "0.0.1"
+    messages: list[Message] | list[dict[str, Any]] = Field(
         default_factory=list, sa_column=Column(JSON)
     )
 
-    user_id: Optional[str] = None
-    state: Optional[str] = None
+    user_id: str | None = None
+    state: str | None = None
 
-    input_request: Optional[dict[str, Any]] = Field(
-        default=None, sa_column=Column(JSON)
-    )
+    input_request: dict[str, Any] | None = Field(default=None, sa_column=Column(JSON))
 
     # The agent_mode that was active when this run was started.
     # Stored as the string value of `magentic_ui.magentic_ui_config.AgentMode`
     # (e.g. "all", "omniagent_only", "websurfer_only"). Null on legacy runs
     # created before this column existed; consumers should treat null as
     # "unknown" and avoid hiding any messages.
-    agent_mode: Optional[str] = None
+    agent_mode: str | None = None
 
     @field_serializer("created_at", "updated_at", when_used="json")
-    def serialize_datetime(self, value: datetime) -> Optional[str]:
+    def serialize_datetime(self, value: datetime) -> str | None:
         return _serialize_utc(value)
 
 
 class Settings(SQLModel, table=True):
     __table_args__ = {"sqlite_autoincrement": True}
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), server_default=func.now()),
     )  # pylint: disable=not-callable
@@ -179,8 +177,8 @@ class Settings(SQLModel, table=True):
         default_factory=_utc_now,
         sa_column=Column(DateTime(timezone=True), onupdate=func.now()),
     )  # pylint: disable=not-callable
-    user_id: Optional[str] = Field(default=None, unique=True)
-    version: Optional[str] = "0.0.1"
+    user_id: str | None = Field(default=None, unique=True)
+    version: str | None = "0.0.1"
     onboarding_completed: bool = Field(
         default=False, sa_column=Column(Boolean, server_default="0", nullable=False)
     )
@@ -194,7 +192,7 @@ class TrustedFolder(SQLModel, table=True):
         UniqueConstraint("user_id", "path", name="uq_trusted_folder_user_path"),
         {"sqlite_autoincrement": True},
     )
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), server_default=func.now()),
     )  # pylint: disable=not-callable

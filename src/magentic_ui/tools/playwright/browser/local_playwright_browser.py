@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from typing import Optional, Any, Dict
 from pathlib import Path
+from typing import Any
 
-from playwright.async_api import BrowserContext, Browser
+from playwright.async_api import Browser, BrowserContext, Playwright, async_playwright
 from pydantic import BaseModel
-
-from playwright.async_api import async_playwright, Playwright
 
 from .base_playwright_browser import PlaywrightBrowser
 
@@ -17,10 +15,10 @@ class LocalPlaywrightBrowserConfig(BaseModel):
     """
 
     headless: bool
-    browser_channel: Optional[str] = None
+    browser_channel: str | None = None
     enable_downloads: bool = False
     persistent_context: bool = False
-    browser_data_dir: Optional[str] = None
+    browser_data_dir: str | None = None
 
     @property
     def requires_persistent_context(self) -> bool:
@@ -64,10 +62,10 @@ class LocalPlaywrightBrowser(PlaywrightBrowser):
     def __init__(
         self,
         headless: bool = False,
-        browser_channel: Optional[str] = None,
+        browser_channel: str | None = None,
         enable_downloads: bool = False,
         persistent_context: bool = False,
-        browser_data_dir: Optional[str] = None,
+        browser_data_dir: str | None = None,
     ):
         super().__init__()
         self._headless = headless
@@ -75,9 +73,9 @@ class LocalPlaywrightBrowser(PlaywrightBrowser):
         self._enable_downloads = enable_downloads
         self._persistent_context = persistent_context
         self._browser_data_dir = browser_data_dir
-        self._playwright: Optional[Playwright] = None
-        self._browser: Optional[Browser] = None
-        self._context: Optional[BrowserContext] = None
+        self._playwright: Playwright | None = None
+        self._browser: Browser | None = None
+        self._context: BrowserContext | None = None
 
     async def _start(self) -> None:
         """
@@ -85,7 +83,7 @@ class LocalPlaywrightBrowser(PlaywrightBrowser):
         """
         self._playwright = await async_playwright().start()
 
-        launch_options: Dict[str, Any] = {"headless": self._headless}
+        launch_options: dict[str, Any] = {"headless": self._headless}
         if self._browser_channel:
             launch_options["channel"] = self._browser_channel
 

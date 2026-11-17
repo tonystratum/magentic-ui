@@ -2,7 +2,7 @@ import io
 import shutil
 from contextlib import redirect_stdout
 from pathlib import Path
-from typing import Any, List, Optional, Tuple
+from typing import Any
 
 from alembic import command
 from alembic.autogenerate import compare_metadata
@@ -23,7 +23,7 @@ class SchemaManager:
     def __init__(
         self,
         engine: Engine,
-        base_dir: Optional[Path] = None,
+        base_dir: Path | None = None,
     ):
         """
         Initialize configuration only - no filesystem or DB operations.
@@ -132,7 +132,7 @@ class SchemaManager:
 
         except Exception as e:
             # Explicitly convert error to string
-            logger.error(f"Failed to initialize alembic: {str(e)}")
+            logger.error(f"Failed to initialize alembic: {e!s}")
             return False
 
     def _create_minimal_env_py(self, env_path: Path) -> None:
@@ -319,7 +319,7 @@ datefmt = %H:%M:%S
 
         return Config(str(self.alembic_ini_path))
 
-    def get_current_revision(self) -> Optional[str]:
+    def get_current_revision(self) -> str | None:
         """
         Gets the current database revision.
 
@@ -341,7 +341,7 @@ datefmt = %H:%M:%S
         script = ScriptDirectory.from_config(config)
         return script.get_current_head()
 
-    def get_schema_differences(self) -> List[Tuple[Any, ...]]:
+    def get_schema_differences(self) -> list[tuple[Any, ...]]:
         """
         Detects differences between current database and models.
 
@@ -353,7 +353,7 @@ datefmt = %H:%M:%S
             diff = compare_metadata(context, SQLModel.metadata)
             return list(diff)
 
-    def check_schema_status(self) -> Tuple[bool, str]:
+    def check_schema_status(self) -> tuple[bool, str]:
         """
         Checks if database schema matches current models and migrations.
 
@@ -375,8 +375,8 @@ datefmt = %H:%M:%S
             return False, "Database schema is up to date"
 
         except Exception as e:
-            logger.error(f"Error checking schema status: {str(e)}")
-            return True, f"Error checking schema: {str(e)}"
+            logger.error(f"Error checking schema status: {e!s}")
+            return True, f"Error checking schema: {e!s}"
 
     def upgrade_schema(self, revision: str = "head") -> bool:
         """
@@ -395,10 +395,10 @@ datefmt = %H:%M:%S
             return True
 
         except Exception as e:
-            logger.error(f"Schema upgrade failed: {str(e)}")
+            logger.error(f"Schema upgrade failed: {e!s}")
             return False
 
-    def check_and_upgrade(self) -> Tuple[bool, str]:
+    def check_and_upgrade(self) -> tuple[bool, str]:
         """
         Checks schema status and upgrades if necessary.
 
@@ -419,7 +419,7 @@ datefmt = %H:%M:%S
 
         return False, status
 
-    def generate_revision(self, message: str = "auto") -> Optional[str]:
+    def generate_revision(self, message: str = "auto") -> str | None:
         """
         Generates new migration revision for current schema changes.
 
@@ -436,10 +436,10 @@ datefmt = %H:%M:%S
                 return self.get_head_revision()
 
         except Exception as e:
-            logger.error(f"Failed to generate revision: {str(e)}")
+            logger.error(f"Failed to generate revision: {e!s}")
             return None
 
-    def get_pending_migrations(self) -> List[str]:
+    def get_pending_migrations(self) -> list[str]:
         """
         Gets list of pending migrations that need to be applied.
 
@@ -455,7 +455,7 @@ datefmt = %H:%M:%S
         if current == head:
             return []
 
-        pending: List[str] = []
+        pending: list[str] = []
         for rev in script.iterate_revisions(current, head):
             pending.append(rev.revision)
 

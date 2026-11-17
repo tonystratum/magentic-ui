@@ -16,7 +16,6 @@ from magentic_ui.teams.omniagent._verifier import (
     render_diff,
 )
 
-
 # ===================================================================
 # extract_candidate_paths
 # ===================================================================
@@ -151,9 +150,7 @@ class TestDecideVerifierClass:
 
 class TestParseStatOutput:
     def test_parses_normal_output(self) -> None:
-        stdout = (
-            "/tmp/a|412|1714946221|regular file\n" "/tmp/b|0|1714946222|directory\n"
-        )
+        stdout = "/tmp/a|412|1714946221|regular file\n/tmp/b|0|1714946222|directory\n"
         result = parse_stat_output(stdout)
         assert result == {
             "/tmp/a": FsState(size=412, mtime=1714946221, ftype="regular file"),

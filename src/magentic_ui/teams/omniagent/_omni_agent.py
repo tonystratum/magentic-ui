@@ -34,20 +34,20 @@ from ...agents.message_schemas import (
 )
 from ...agents.registry import AgentRegistry
 from ...agents.web_surfer.fara._types import StreamUpdate
-from ...magentic_ui_config import AgentMode, ApprovalPolicy
-from ...tools.playwright.browser import BrowserSlotPoolFullError
-from ...types import (
-    ApprovalRequest,
-    InputRequest,
-    LIVE_BROWSER_POOL_FULL_PROMPT,
-    PauseController,
-)
-from ._continuation import handle_max_rounds_continuation, is_subagent_user_stop
 from ...approval import (
     AGENT_INPUT_SESSION_AUTO_APPROVE,
     ApprovalStatus,
 )
+from ...magentic_ui_config import AgentMode, ApprovalPolicy
+from ...tools.playwright.browser import BrowserSlotPoolFullError
+from ...types import (
+    LIVE_BROWSER_POOL_FULL_PROMPT,
+    ApprovalRequest,
+    InputRequest,
+    PauseController,
+)
 from ._command_policy import ClassificationResult, CommandVerdict
+from ._continuation import handle_max_rounds_continuation, is_subagent_user_stop
 from ._errors import ToolCallError
 from ._handoff import build_handoff_from_info
 from ._harness import format_tool_output

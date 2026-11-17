@@ -1,8 +1,8 @@
 """Tests for config_file_loader — YAML config partial merge into DB."""
 
 from pathlib import Path
-from unittest.mock import MagicMock
 from typing import Any
+from unittest.mock import MagicMock
 
 from magentic_ui.backend.database.config_file_loader import (
     _deep_merge,
@@ -11,7 +11,6 @@ from magentic_ui.backend.database.config_file_loader import (
 )
 from magentic_ui.backend.datamodel import Settings
 from magentic_ui.magentic_ui_config import MagenticUIConfig
-
 
 # =============================================================================
 # _deep_merge

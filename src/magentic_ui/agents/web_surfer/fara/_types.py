@@ -12,10 +12,9 @@ import base64
 import io
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Literal, Tuple
+from typing import Any, Literal
 
 from PIL import Image
-
 
 # ---------------------------------------------------------------------------
 # LLM message types
@@ -41,7 +40,7 @@ class ImageObj:
         self.image.save(buf, format="PNG")
         return base64.b64encode(buf.getvalue()).decode("utf-8")
 
-    def resize(self, size: Tuple[int, int]) -> Image.Image:
+    def resize(self, size: tuple[int, int]) -> Image.Image:
         """Resize the image."""
         return self.image.resize(size)
 

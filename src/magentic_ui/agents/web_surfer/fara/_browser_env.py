@@ -8,7 +8,6 @@ quicksand browser is started.
 
 from __future__ import annotations
 
-import asyncio
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
@@ -171,4 +170,4 @@ class PlaywrightBrowserEnvironment(BrowserEnvironment):
                 self._page, state=state, timeout=timeout
             )
         except PlaywrightTimeoutError as e:
-            raise asyncio.TimeoutError(str(e)) from e
+            raise TimeoutError(str(e)) from e

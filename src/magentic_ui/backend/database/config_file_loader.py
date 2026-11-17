@@ -16,8 +16,8 @@ from typing import Any
 import yaml
 
 from ...magentic_ui_config import MagenticUIConfig, is_onboarding_complete
-from .db_manager import DatabaseManager
 from ..datamodel import Settings
+from .db_manager import DatabaseManager
 
 logger = logging.getLogger(__name__)
 

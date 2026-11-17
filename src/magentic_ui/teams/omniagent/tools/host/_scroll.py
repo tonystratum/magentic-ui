@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ._state import ViewportState, SCROLL_WARNING, format_viewport
+from ._state import SCROLL_WARNING, ViewportState, format_viewport
 
 
 @dataclass

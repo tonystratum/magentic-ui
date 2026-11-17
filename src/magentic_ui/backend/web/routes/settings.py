@@ -13,7 +13,7 @@ A follow-up PR will move the non-onboarding pieces of
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
@@ -164,7 +164,7 @@ def _apply_agent_settings(config: dict[str, Any], settings: AgentSettings) -> No
 
 
 @router.get("/agents")
-async def get_agent_settings(db=Depends(get_db)) -> Dict[str, Any]:
+async def get_agent_settings(db=Depends(get_db)) -> dict[str, Any]:
     """Return the active agent behavior settings."""
     _, config = _get_db_config(db)
     return {"status": True, "data": _read_agent_settings(config).model_dump()}
@@ -173,7 +173,7 @@ async def get_agent_settings(db=Depends(get_db)) -> Dict[str, Any]:
 @router.put("/agents")
 async def update_agent_settings(
     payload: AgentSettingsPatch, db=Depends(get_db)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Persist updated agent behavior settings.
 
     Sub-sections that are omitted from the payload preserve the current

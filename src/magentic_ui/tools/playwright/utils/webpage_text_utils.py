@@ -1,8 +1,8 @@
 import io
-from typing import Any, Optional
 import logging
 import os
 import tempfile
+from typing import Any
 
 import tiktoken
 from playwright.async_api import Page
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class WebpageTextUtilsPlaywright:
     def __init__(self):
-        self._markdown_converter: Optional[Any] | None = None
+        self._markdown_converter: Any | None = None
         self._page_script: str = ""
 
         # Read page_script
@@ -188,8 +188,8 @@ class WebpageTextUtilsPlaywright:
             return result.text_content
 
         except Exception as e:
-            logger.error(f"Error extracting PDF content: {str(e)}")
-            return f"Error extracting PDF content: {str(e)}"
+            logger.error(f"Error extracting PDF content: {e!s}")
+            return f"Error extracting PDF content: {e!s}"
 
     async def _extract_pdf_browser(self, page: Page) -> str:
         """Extract text content from a PDF page using browser methods.

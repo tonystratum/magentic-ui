@@ -1,18 +1,20 @@
 # api/app.py
 import os
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncGenerator, Any, Callable, Awaitable
+from typing import Any
 
 # import logging
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
-from starlette.exceptions import HTTPException as StarletteHTTPException
 from loguru import logger
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from ...version import VERSION
+from ..database.config_file_loader import load_config_file
 from .auth import (
     bad_host_response,
     inject_token_into_html,
@@ -22,17 +24,18 @@ from .auth import (
 from .config import settings
 from .deps import cleanup_managers, get_db, init_db, init_managers
 from .initialization import AppInitializer
-from .routes.onboarding import reset_onboarding_config
-from ..database.config_file_loader import load_config_file
 from .routes import (
     filesystem,
     onboarding,
     runs,
     sessions,
-    settings as settings_routes,
     trusted_folders,
     ws,
 )
+from .routes import (
+    settings as settings_routes,
+)
+from .routes.onboarding import reset_onboarding_config
 
 # Initialize application
 app_file_path = os.path.dirname(os.path.abspath(__file__))
@@ -117,7 +120,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         )
 
     except Exception as e:
-        logger.error(f"Failed to initialize application: {str(e)}")
+        logger.error(f"Failed to initialize application: {e!s}")
         raise
 
     yield  # Application runs here
@@ -128,7 +131,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         await cleanup_managers()
         logger.info("Application shutdown complete")
     except Exception as e:
-        logger.error(f"Error during shutdown: {str(e)}")
+        logger.error(f"Error during shutdown: {e!s}")
 
 
 # Create FastAPI application
@@ -271,7 +274,7 @@ app.mount("/", SPAStaticFiles(directory=initializer.ui_root, html=True), name="u
 
 @app.exception_handler(500)
 async def internal_error_handler(request: Request, exc: Exception):
-    logger.error(f"Internal error: {str(exc)}")
+    logger.error(f"Internal error: {exc!s}")
     return {
         "status": False,
         "message": "Internal server error",

@@ -17,8 +17,8 @@ from typing import TYPE_CHECKING
 
 from loguru import logger
 
-from ...datamodel import RunStatus
 from ....types import LIVE_BROWSER_POOL_FULL_PROMPT
+from ...datamodel import RunStatus
 
 if TYPE_CHECKING:
     from .connection import WebSocketManager
@@ -30,7 +30,7 @@ POOL_FULL_PROMPT_MARKER = "live_browser_pool_full"
 
 
 async def handle_pool_full(
-    ws_manager: "WebSocketManager", run_id: int, detail: str
+    ws_manager: WebSocketManager, run_id: int, detail: str
 ) -> None:
     """Surface a pool-full failure as an InputRequest."""
     # Close the partial TM so _execute_stream's finally doesn't double-close.
@@ -89,7 +89,7 @@ async def handle_pool_full(
 
 
 async def maybe_retry_after_pool_full(
-    ws_manager: "WebSocketManager", run_id: int, response: str
+    ws_manager: WebSocketManager, run_id: int, response: str
 ) -> bool:
     """Retry a pool-full run on user reply. Returns True if handled.
 

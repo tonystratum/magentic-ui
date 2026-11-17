@@ -39,7 +39,7 @@ class Sandbox(Protocol):
         """Enter the sandbox context."""
         ...
 
-    async def __aexit__(self, *args: Any) -> None:
+    async def __aexit__(self, *args: object) -> None:
         """Exit the sandbox context."""
         ...
 
@@ -75,9 +75,8 @@ class SandboxBase:
         """Enter the sandbox context."""
         return self
 
-    async def __aexit__(self, *args: Any) -> None:
+    async def __aexit__(self, *args: object) -> None:
         """Exit the sandbox context."""
-        pass
 
     def to_guest_path(self, host_path: Path) -> Path:
         """Translate a host path to the corresponding guest path."""

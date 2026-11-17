@@ -11,7 +11,7 @@ Config format (from config.yaml):
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Any, Union, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import httpx
 import openai
@@ -129,7 +129,7 @@ class ChatClient:
         self._client = client
         self.model = model
 
-    async def create(self, messages: list[LLMMessage], **kwargs: Any) -> str:  # noqa: ANN401
+    async def create(self, messages: list[LLMMessage], **kwargs: Any) -> str:
         """Call LLM and return response text."""
         openai_messages = [m.to_openai_dict() for m in messages]
         response = await self._client.chat.completions.create(  # type: ignore[reportUnknownMemberType]
@@ -156,7 +156,7 @@ _AZURE_PROVIDERS = {
 }
 
 
-def create_client(config: Union[Any, None]) -> tuple[AsyncOpenAI, str]:
+def create_client(config: Any | None) -> tuple[AsyncOpenAI, str]:
     """Create an AsyncOpenAI client from model config dict.
 
     Args:

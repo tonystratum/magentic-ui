@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel
 
@@ -7,23 +7,23 @@ from pydantic import BaseModel
 class MessageConfig(BaseModel):
     source: str
     content: str | None
-    message_type: Optional[str] = "text"
+    message_type: str | None = "text"
 
 
 class MessageMeta(BaseModel):
-    task: Optional[str] = None
-    summary_method: Optional[str] = "last"
-    files: Optional[List[dict[str, Any]]] = None
-    time: Optional[datetime] = None
-    log: Optional[List[dict[str, Any]]] = None
-    usage: Optional[List[dict[str, Any]]] = None
+    task: str | None = None
+    summary_method: str | None = "last"
+    files: list[dict[str, Any]] | None = None
+    time: datetime | None = None
+    log: list[dict[str, Any]] | None = None
+    usage: list[dict[str, Any]] | None = None
 
 
 class EnvironmentVariable(BaseModel):
     name: str
     value: str
     type: Literal["string", "number", "boolean", "secret"] = "string"
-    description: Optional[str] = None
+    description: str | None = None
     required: bool = False
 
 
@@ -39,10 +39,10 @@ class UISettings(BaseModel):
 class Response(BaseModel):
     message: str
     status: bool
-    data: Optional[Any] = None
+    data: Any | None = None
 
 
 class SocketMessage(BaseModel):
     connection_id: str
-    data: Dict[str, Any]
+    data: dict[str, Any]
     type: str

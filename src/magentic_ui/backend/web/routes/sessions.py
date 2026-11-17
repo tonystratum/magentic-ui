@@ -1,20 +1,20 @@
 # api/routes/sessions.py
 import asyncio
-from datetime import datetime, timezone
-from typing import Dict, Optional
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from loguru import logger
 from sqlalchemy import func
-from sqlmodel import Session as DBSession, select
+from sqlmodel import Session as DBSession
+from sqlmodel import select
 
-from ...datamodel import Message, Run, Session, RunStatus
+from ...datamodel import Message, Run, RunStatus, Session
 from ..deps import get_db, get_websocket_manager
 
 router = APIRouter()
 
 
-def _to_iso_utc(dt: Optional[datetime]) -> Optional[str]:
+def _to_iso_utc(dt: datetime | None) -> str | None:
     """Serialize a datetime as an ISO-8601 UTC string.
 
     SQLite drops tzinfo on `DateTime(timezone=True)` columns, so values written
@@ -27,14 +27,14 @@ def _to_iso_utc(dt: Optional[datetime]) -> Optional[str]:
     if dt is None:
         return None
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
+        dt = dt.replace(tzinfo=UTC)
     else:
-        dt = dt.astimezone(timezone.utc)
+        dt = dt.astimezone(UTC)
     return dt.isoformat()
 
 
 @router.get("/")
-async def list_sessions(user_id: str, db=Depends(get_db)) -> Dict:
+async def list_sessions(user_id: str, db=Depends(get_db)) -> dict:
     """List all sessions with latest run status for a user (single query)"""
     with DBSession(db.engine) as session:
         # Subquery: get max run.id per session (latest run)
@@ -80,7 +80,7 @@ async def list_sessions(user_id: str, db=Depends(get_db)) -> Dict:
 
 
 @router.get("/{session_id}")
-async def get_session(session_id: int, user_id: str, db=Depends(get_db)) -> Dict:
+async def get_session(session_id: int, user_id: str, db=Depends(get_db)) -> dict:
     """Get a specific session"""
     response = db.get(Session, filters={"id": session_id, "user_id": user_id})
     if not response.status or not response.data:
@@ -89,7 +89,7 @@ async def get_session(session_id: int, user_id: str, db=Depends(get_db)) -> Dict
 
 
 @router.post("/")
-async def create_session(session: Session, db=Depends(get_db)) -> Dict:
+async def create_session(session: Session, db=Depends(get_db)) -> dict:
     """Create a new session with an associated run"""
     # Create session
     session_response = db.upsert(session)
@@ -120,7 +120,7 @@ async def create_session(session: Session, db=Depends(get_db)) -> Dict:
 @router.put("/{session_id}")
 async def update_session(
     session_id: int, user_id: str, session: Session, db=Depends(get_db)
-) -> Dict:
+) -> dict:
     """Update an existing session"""
     # First verify the session belongs to user
     existing = db.get(Session, filters={"id": session_id, "user_id": user_id})
@@ -145,7 +145,7 @@ async def delete_session(
     user_id: str,
     db=Depends(get_db),
     ws_manager=Depends(get_websocket_manager),
-) -> Dict:
+) -> dict:
     """Delete a session and all its associated runs and messages"""
     # Verify the session belongs to the user before performing any actions.
     session_response = db.get(
@@ -183,7 +183,7 @@ async def delete_session(
                         ws_manager.stop_run(run.id, reason="Session deleted"),
                         timeout=10,
                     )
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     logger.warning(
                         f"Timed out stopping run {run.id}, proceeding with delete"
                     )
@@ -199,7 +199,7 @@ async def delete_session(
 
 
 @router.get("/{session_id}/runs")
-async def list_session_runs(session_id: int, user_id: str, db=Depends(get_db)) -> Dict:
+async def list_session_runs(session_id: int, user_id: str, db=Depends(get_db)) -> dict:
     """Get complete session history organized by runs"""
 
     try:
@@ -255,7 +255,7 @@ async def list_session_runs(session_id: int, user_id: str, db=Depends(get_db)) -
                         }
                     )
                 except Exception as e:
-                    logger.error(f"Error processing run {run.id}: {str(e)}")
+                    logger.error(f"Error processing run {run.id}: {e!s}")
                     # Include run with error state instead of failing entirely
                     run_data.append(
                         {
@@ -265,7 +265,7 @@ async def list_session_runs(session_id: int, user_id: str, db=Depends(get_db)) -
                             "task": run.task,
                             "team_result": None,
                             "messages": [],
-                            "error": f"Failed to process run: {str(e)}",
+                            "error": f"Failed to process run: {e!s}",
                             "input_request": getattr(run, "input_request", None),
                             "agent_mode": getattr(run, "agent_mode", None),
                         }
@@ -276,7 +276,7 @@ async def list_session_runs(session_id: int, user_id: str, db=Depends(get_db)) -
     except HTTPException:
         raise  # Re-raise HTTP exceptions
     except Exception as e:
-        logger.error(f"Unexpected error in list_messages: {str(e)}")
+        logger.error(f"Unexpected error in list_messages: {e!s}")
         raise HTTPException(
             status_code=500, detail="Internal server error while fetching session data"
         ) from e

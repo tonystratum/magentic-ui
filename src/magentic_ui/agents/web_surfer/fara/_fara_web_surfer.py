@@ -21,11 +21,9 @@ from typing import TYPE_CHECKING, Any
 import openai
 from loguru import logger
 
-from ._browser_env import PlaywrightBrowserEnvironment
-from ._fara_qwen3 import FaraQwen3Agent
-from ._fara_qwen3_next import FaraQwen3NextAgent
-from ._state_io import message_from_dict, message_to_dict
-from ._types import ImageObj, LLMMessage, StreamUpdate
+from ...._ai_client import humanize_model_error, is_retryable_model_error
+from ....tools.playwright.playwright_controller_fara import PlaywrightController
+from ....types import ContinuationRequest, InputRequest, PauseController
 from ...message_schemas import (
     HandoffInfo,
     HandoffReason,
@@ -38,9 +36,11 @@ from ...message_schemas import (
     system_props,
     tool_call_props,
 )
-from ...._ai_client import humanize_model_error, is_retryable_model_error
-from ....tools.playwright.playwright_controller_fara import PlaywrightController
-from ....types import ContinuationRequest, InputRequest, PauseController
+from ._browser_env import PlaywrightBrowserEnvironment
+from ._fara_qwen3 import FaraQwen3Agent
+from ._fara_qwen3_next import FaraQwen3NextAgent
+from ._state_io import message_from_dict, message_to_dict
+from ._types import ImageObj, LLMMessage, StreamUpdate
 
 if TYPE_CHECKING:
     from playwright.async_api import BrowserContext
@@ -455,9 +455,7 @@ class FaraWebSurfer:
 
             except Exception as e:
                 error_str = str(e) or f"{type(e).__name__} (empty message)"
-                logger.error(
-                    f"Tool call error: {error_str} | Raw: {repr(raw_response)}"
-                )
+                logger.error(f"Tool call error: {error_str} | Raw: {raw_response!r}")
                 # A fatal model error (auth, quota, unreachable endpoint)
                 # can't be fixed by feeding it back and retrying, so stop
                 # immediately. Validation and other recoverable errors fall
@@ -601,7 +599,7 @@ class FaraWebSurfer:
                     await self._inject_user_input(resp)
                     continue
 
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 raise  # Re-raise timeout (handled by connection layer)
             except Exception as e:
                 error_msg = f"Error executing action: {e}"

@@ -6,7 +6,7 @@ from __future__ import annotations
 import asyncio
 import copy
 import logging
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
@@ -16,15 +16,15 @@ if TYPE_CHECKING:
     from ...database import DatabaseManager
 
 from ....magentic_ui_config import (
+    ROLE_DEFAULTS,
     AgentMode,
     MagenticUIConfig,
-    ROLE_DEFAULTS,
     is_onboarding_complete,
     required_roles_for_mode,
 )
 from ...datamodel import Settings
-from ...web.deps import get_db
 from ...web.config import settings as app_settings
+from ...web.deps import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -62,8 +62,8 @@ class ModelVerifyRequest(BaseModel):
     only needs to send the role(s) required by ``agent_mode``.
     """
 
-    orchestrator: Optional[ModelEndpointInput] = None
-    web_surfer: Optional[ModelEndpointInput] = None
+    orchestrator: ModelEndpointInput | None = None
+    web_surfer: ModelEndpointInput | None = None
     agent_mode: AgentMode = AgentMode.ALL
 
 
@@ -75,12 +75,12 @@ class AgentModeRequest(BaseModel):
 
 class ModelEndpointVerification(BaseModel):
     success: bool
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class ModelVerifyResponse(BaseModel):
-    orchestrator: Optional[ModelEndpointVerification] = None
-    web_surfer: Optional[ModelEndpointVerification] = None
+    orchestrator: ModelEndpointVerification | None = None
+    web_surfer: ModelEndpointVerification | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -88,7 +88,7 @@ class ModelVerifyResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-def _get_db_config(db: "DatabaseManager") -> tuple[Settings, dict[str, Any]]:
+def _get_db_config(db: DatabaseManager) -> tuple[Settings, dict[str, Any]]:
     """Return (Settings row, config dict as MagenticUIConfig shape)."""
     response = db.get(Settings, filters={"user_id": app_settings.DEFAULT_USER_ID})
     if not response.status:
@@ -119,7 +119,7 @@ def _get_db_config(db: "DatabaseManager") -> tuple[Settings, dict[str, Any]]:
 
 
 def _save_db_config(
-    db: "DatabaseManager", settings_row: Settings, config: dict[str, Any]
+    db: DatabaseManager, settings_row: Settings, config: dict[str, Any]
 ) -> None:
     """Persist config dict back into the Settings row."""
     settings_row.config = config
@@ -238,7 +238,7 @@ _is_onboarding_complete = is_onboarding_complete
 
 
 @router.get("/status")
-async def get_onboarding_status(db=Depends(get_db)) -> Dict[str, Any]:
+async def get_onboarding_status(db=Depends(get_db)) -> dict[str, Any]:
     """Return whether onboarding has been completed."""
     response = db.get(Settings, filters={"user_id": app_settings.DEFAULT_USER_ID})
     completed = False
@@ -251,7 +251,7 @@ async def get_onboarding_status(db=Depends(get_db)) -> Dict[str, Any]:
 
 
 @router.get("/endpoints")
-async def get_onboarding_endpoints(db=Depends(get_db)) -> Dict[str, Any]:
+async def get_onboarding_endpoints(db=Depends(get_db)) -> dict[str, Any]:
     """Return saved model endpoints (masked) and the active agent_mode.
 
     Used by the settings page and the onboarding flow.
@@ -277,7 +277,7 @@ async def get_onboarding_endpoints(db=Depends(get_db)) -> Dict[str, Any]:
 @router.post("/verify")
 async def verify_endpoints(
     req: ModelVerifyRequest, db=Depends(get_db)
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Verify the model endpoint(s) required by ``agent_mode`` and save them.
 
     The caller may omit the role(s) not required by ``agent_mode``. On
@@ -351,7 +351,7 @@ async def verify_endpoints(
 
 
 @router.post("/agent-mode")
-async def set_agent_mode(req: AgentModeRequest, db=Depends(get_db)) -> Dict[str, Any]:
+async def set_agent_mode(req: AgentModeRequest, db=Depends(get_db)) -> dict[str, Any]:
     """Update ``agent_mode`` only — no model verification.
 
     Returns HTTP 400 (with a human-readable message) when the new mode
@@ -384,7 +384,7 @@ async def set_agent_mode(req: AgentModeRequest, db=Depends(get_db)) -> Dict[str,
 
 
 @router.post("/complete")
-async def complete_onboarding(db=Depends(get_db)) -> Dict[str, Any]:
+async def complete_onboarding(db=Depends(get_db)) -> dict[str, Any]:
     """Mark onboarding as completed. Requires the model(s) for the active
     ``agent_mode`` to be configured.
     """
@@ -412,7 +412,7 @@ async def complete_onboarding(db=Depends(get_db)) -> Dict[str, Any]:
 
 
 @router.post("/reset")
-async def reset_onboarding(db=Depends(get_db)) -> Dict[str, Any]:
+async def reset_onboarding(db=Depends(get_db)) -> dict[str, Any]:
     """Reset onboarding config — clears model endpoints, preserves sandbox/agent_mode."""
     reset_onboarding_config(db)
     return {"status": True, "message": "Onboarding config reset"}
@@ -423,7 +423,7 @@ async def reset_onboarding(db=Depends(get_db)) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def reset_onboarding_config(db: "DatabaseManager") -> None:
+def reset_onboarding_config(db: DatabaseManager) -> None:
     """Clear model endpoints and onboarding flag. Preserves sandbox and agent_mode."""
     response = db.get(Settings, filters={"user_id": app_settings.DEFAULT_USER_ID})
     if response.status and response.data:

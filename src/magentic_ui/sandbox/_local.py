@@ -6,7 +6,6 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Any
 
 from . import SandboxBase
 
@@ -51,7 +50,7 @@ class LocalSandboxBase(SandboxBase):
                 )
         return self
 
-    async def __aexit__(self, *args: Any) -> None:
+    async def __aexit__(self, *args: object) -> None:
         self._venv = None
 
     def _activated_env(self, extra: dict[str, str] | None = None) -> dict[str, str]:

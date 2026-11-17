@@ -102,9 +102,9 @@ class TestUserInbox:
         # Round 2's LLM call should include the queued message as a
         # plain user-role message.
         round_2_user_msgs = _user_messages_in_call(client, 1)
-        assert any(
-            "interjection: also do X" in m for m in round_2_user_msgs
-        ), f"queued message missing from round 2 user messages: {round_2_user_msgs}"
+        assert any("interjection: also do X" in m for m in round_2_user_msgs), (
+            f"queued message missing from round 2 user messages: {round_2_user_msgs}"
+        )
 
         # Inbox should be empty after the agent drained it.
         assert pause_controller.has_queued_messages is False
@@ -336,9 +336,9 @@ class TestSubAgentSteeringSurface:
         wrapper_msg = next(m for m in round_2_user_msgs if "<user_interjection>" in m)
         body = wrapper_msg.split("<user_interjection>\n", 1)[1]
         first_nonblank = next(line for line in body.splitlines() if line.strip())
-        assert (
-            first_nonblank == "direct interjection"
-        ), f"User text must appear first in the wrapper; got: {first_nonblank!r}"
+        assert first_nonblank == "direct interjection", (
+            f"User text must appear first in the wrapper; got: {first_nonblank!r}"
+        )
 
     @pytest.mark.asyncio
     async def test_multiple_subagent_drains_combined_into_one_wrapper(

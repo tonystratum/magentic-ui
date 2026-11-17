@@ -16,16 +16,17 @@ from __future__ import annotations
 import json
 import logging
 import shlex
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Awaitable, Callable
+from typing import TYPE_CHECKING, Any
 
+from ._bash_observers import enrich
 from ._command_policy import (
     ApprovalCheck,
     classify_bash_command,
     classify_file_tool,
     classify_sensitive_read,
 )
-from ._bash_observers import enrich
 from ._shell_quoting import shell_quote_path
 from .tools.host import (
     BashOutput,
@@ -387,7 +388,7 @@ async def _exec_create(agent: OmniAgent, filename: str = "", **_: Any) -> Create
 
     # printf '\n' > "$1", then open it.
     result = await agent.sandbox.execute(
-        f'mkdir -p -- "$(dirname -- {quoted})" ' f"&& printf '\\n' > {quoted}",
+        f"mkdir -p -- \"$(dirname -- {quoted})\" && printf '\\n' > {quoted}",
         cwd=agent.guest_workspace,
     )
     if result.exit_code != 0:

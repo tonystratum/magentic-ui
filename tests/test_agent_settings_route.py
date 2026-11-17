@@ -20,6 +20,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from magentic_ui.backend.datamodel import Settings
 from magentic_ui.backend.web.deps import get_db
 from magentic_ui.backend.web.routes import settings as settings_routes
 from magentic_ui.backend.web.routes.settings import (
@@ -30,8 +31,6 @@ from magentic_ui.backend.web.routes.settings import (
     _coerce_max_rounds,
     _read_agent_settings,
 )
-from magentic_ui.backend.datamodel import Settings
-
 
 # ---------------------------------------------------------------------------
 # Helper-level tests

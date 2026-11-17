@@ -12,7 +12,6 @@ from magentic_ui.agents.registry import AgentEntry, AgentRegistry
 from magentic_ui.agents.web_surfer.fara._types import StreamUpdate
 from magentic_ui.types import InputRequest
 
-
 # -- Helpers ----------------------------------------------------------------
 
 

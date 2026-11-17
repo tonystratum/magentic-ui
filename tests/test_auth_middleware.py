@@ -14,8 +14,8 @@ the test app small avoids pulling the full magentic-ui server
 
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable, Generator
 from pathlib import Path
-from typing import Awaitable, Callable, Generator
 
 import pytest
 from fastapi import FastAPI, Request, WebSocket
@@ -274,6 +274,7 @@ class TestWebSocketAuth:
         subprotocols: list[str] | None = None,
     ):
         from unittest.mock import MagicMock
+
         from fastapi import WebSocket
 
         ws = MagicMock(spec=WebSocket)

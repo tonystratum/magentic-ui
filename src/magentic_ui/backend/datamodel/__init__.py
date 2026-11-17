@@ -7,7 +7,6 @@ from .db import (
     Settings,
     TrustedFolder,
 )
-
 from .types import (
     EnvironmentVariable,
     MessageConfig,

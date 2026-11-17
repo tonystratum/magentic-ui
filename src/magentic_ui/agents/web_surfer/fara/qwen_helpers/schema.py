@@ -1,9 +1,8 @@
 # Source: https://github.com/QwenLM/Qwen-Agent/blob/main/qwen_agent/llm/schema.py
 
-from typing import List, Literal, Optional, Tuple, Union
+from typing import Literal
 
 from pydantic import BaseModel, field_validator, model_validator
-
 
 DEFAULT_SYSTEM_MESSAGE = "You are a helpful assistant."
 
@@ -66,19 +65,19 @@ class FunctionCall(BaseModelCompatibleDict):
 
 
 class ContentItem(BaseModelCompatibleDict):
-    text: Optional[str] = None
-    image: Optional[str] = None
-    file: Optional[str] = None
-    audio: Optional[Union[str, dict]] = None
-    video: Optional[Union[str, list]] = None
+    text: str | None = None
+    image: str | None = None
+    file: str | None = None
+    audio: str | dict | None = None
+    video: str | list | None = None
 
     def __init__(
         self,
-        text: Optional[str] = None,
-        image: Optional[str] = None,
-        file: Optional[str] = None,
-        audio: Optional[Union[str, dict]] = None,
-        video: Optional[Union[str, list]] = None,
+        text: str | None = None,
+        image: str | None = None,
+        file: str | None = None,
+        audio: str | dict | None = None,
+        video: str | list | None = None,
     ):
         super().__init__(text=text, image=image, file=file, audio=audio, video=video)
 
@@ -107,7 +106,7 @@ class ContentItem(BaseModelCompatibleDict):
 
     def get_type_and_value(
         self,
-    ) -> Tuple[Literal["text", "image", "file", "audio", "video"], str]:
+    ) -> tuple[Literal["text", "image", "file", "audio", "video"], str]:
         ((t, v),) = self.model_dump().items()
         assert t in ("text", "image", "file", "audio", "video")
         return t, v
@@ -125,20 +124,20 @@ class ContentItem(BaseModelCompatibleDict):
 
 class Message(BaseModelCompatibleDict):
     role: str
-    content: Union[str, List[ContentItem]]
-    reasoning_content: Optional[Union[str, List[ContentItem]]] = None
-    name: Optional[str] = None
-    function_call: Optional[FunctionCall] = None
-    extra: Optional[dict] = None
+    content: str | list[ContentItem]
+    reasoning_content: str | list[ContentItem] | None = None
+    name: str | None = None
+    function_call: FunctionCall | None = None
+    extra: dict | None = None
 
     def __init__(
         self,
         role: str,
-        content: Union[str, List[ContentItem]],
-        reasoning_content: Optional[Union[str, List[ContentItem]]] = None,
-        name: Optional[str] = None,
-        function_call: Optional[FunctionCall] = None,
-        extra: Optional[dict] = None,
+        content: str | list[ContentItem],
+        reasoning_content: str | list[ContentItem] | None = None,
+        name: str | None = None,
+        function_call: FunctionCall | None = None,
+        extra: dict | None = None,
         **kwargs,
     ):
         if content is None:
@@ -161,6 +160,6 @@ class Message(BaseModelCompatibleDict):
     def role_checker(cls, value: str) -> str:
         if value not in [USER, ASSISTANT, SYSTEM, FUNCTION]:
             raise ValueError(
-                f'{value} must be one of {",".join([USER, ASSISTANT, SYSTEM, FUNCTION])}'
+                f"{value} must be one of {','.join([USER, ASSISTANT, SYSTEM, FUNCTION])}"
             )
         return value

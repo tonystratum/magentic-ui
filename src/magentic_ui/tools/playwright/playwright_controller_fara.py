@@ -1,13 +1,14 @@
 import asyncio
 import base64
-import os
-import logging
 import functools
-from typing import Any, Callable, Optional, Tuple, Union, TypeVar, Awaitable
+import logging
+import os
+from collections.abc import Awaitable, Callable
+from typing import Any, TypeVar
 from urllib.parse import urlsplit
 
 from playwright._impl._errors import Error as PlaywrightError
-from playwright._impl._errors import TimeoutError, TargetClosedError
+from playwright._impl._errors import TargetClosedError, TimeoutError
 from playwright.async_api import Download, Page
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 
@@ -269,10 +270,10 @@ class PlaywrightController:
     def __init__(
         self,
         animate_actions: bool = False,
-        downloads_folder: Optional[str] = None,
+        downloads_folder: str | None = None,
         viewport_width: int = 1440,
         viewport_height: int = 900,
-        _download_handler: Optional[Callable[[Download], None]] = None,
+        _download_handler: Callable[[Download], None] | None = None,
         to_resize_viewport: bool = True,
         single_tab_mode: bool = False,
         sleep_after_action: int = 10,
@@ -302,10 +303,10 @@ class PlaywrightController:
         self.logger = logger or logging.getLogger("playwright_controller")
 
         # Set up the download handler
-        self.last_cursor_position: Tuple[float, float] = (0.0, 0.0)
+        self.last_cursor_position: tuple[float, float] = (0.0, 0.0)
         self._text_utils = WebpageTextUtilsPlaywright()
 
-    async def sleep(self, page: Page, duration: Union[int, float]) -> None:
+    async def sleep(self, page: Page, duration: float) -> None:
         await asyncio.sleep(duration)
 
     @handle_target_closed()
@@ -382,7 +383,7 @@ class PlaywrightController:
                 )
 
     @handle_target_closed()
-    async def visit_page(self, page: Page, url: str) -> Tuple[bool, bool]:
+    async def visit_page(self, page: Page, url: str) -> tuple[bool, bool]:
         await self._ensure_page_ready(page)
         # Navigation always counts as a metadata-affecting event, even when
         # goto times out — by the time we return, the page state has changed
@@ -664,7 +665,7 @@ class PlaywrightController:
 
     @handle_target_closed()
     async def wait_for_load_state(
-        self, page: Page, state: str = "load", timeout: Optional[int] = None
+        self, page: Page, state: str = "load", timeout: int | None = None
     ) -> None:
         """Wait for the page to reach a specific load state."""
         await page.wait_for_load_state(state, timeout=timeout)

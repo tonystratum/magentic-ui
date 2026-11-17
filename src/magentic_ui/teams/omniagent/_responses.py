@@ -18,7 +18,7 @@ import logging
 import re
 import shutil
 from collections.abc import AsyncIterator
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, cast
 
@@ -535,7 +535,7 @@ class OmniResponses:
                 )
                 try:
                     kind, payload = await asyncio.wait_for(events.get(), wait)
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     slow_emitted = True
                     yield ("state", "model_slow")
                     continue
@@ -798,7 +798,7 @@ class OmniResponses:
 
 def _now_iso() -> str:
     """Current UTC time in ISO-8601 format with trailing ``Z``."""
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _append_text(path: Path, text: str) -> None:

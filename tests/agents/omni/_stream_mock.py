@@ -51,7 +51,7 @@ class MockStream:
         self._completion = completion
         self._events = list(events or [])
 
-    def __aiter__(self) -> "MockStream":
+    def __aiter__(self) -> MockStream:
         return self
 
     async def __anext__(self) -> Any:
@@ -83,7 +83,7 @@ class MockStreamManager:
             return MockStream(self._target.completion, self._target.events)
         return MockStream(self._target)
 
-    async def __aexit__(self, *args: Any) -> None:
+    async def __aexit__(self, *args: object) -> None:
         return None
 
 

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-
 from magentic_ui.agents.message_schemas import HandoffReason, HandoffStatus
 from magentic_ui.teams.omniagent._handoff import (
     build_handoff,

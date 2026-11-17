@@ -123,7 +123,7 @@ async def test_orphan_delegate_cua_injects_subagent_summary(tmp_path: Path) -> N
         async for _ in agent.run_stream("seed"):
             pass
         assert agent._chat is not None
-        agent._chat._messages.append(  # noqa: SLF001
+        agent._chat._messages.append(
             {
                 "role": "assistant",
                 "content": '<tool_call>{"name":"delegate_cua","arguments":{"task":"find stem gifts"}}</tool_call>',
@@ -166,7 +166,7 @@ async def test_orphan_non_subagent_uses_generic_fallback(tmp_path: Path) -> None
         async for _ in agent.run_stream("seed"):
             pass
         assert agent._chat is not None
-        agent._chat._messages.append(  # noqa: SLF001
+        agent._chat._messages.append(
             {
                 "role": "assistant",
                 "content": '<tool_call>{"name":"bash","arguments":{"command":"sleep 60"}}</tool_call>',
@@ -302,7 +302,7 @@ async def test_summarize_failure_falls_back_to_generic(tmp_path: Path) -> None:
         async for _ in agent.run_stream("seed"):
             pass
         assert agent._chat is not None
-        agent._chat._messages.append(  # noqa: SLF001
+        agent._chat._messages.append(
             {
                 "role": "assistant",
                 "content": '<tool_call>{"name":"delegate_cua","arguments":{"task":"x"}}</tool_call>',

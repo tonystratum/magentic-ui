@@ -2,7 +2,6 @@
 
 import json
 from abc import ABC, abstractmethod
-from typing import List, Optional, Union
 
 from .schema import ContentItem
 from .utils import has_chinese_chars, json_loads
@@ -61,9 +60,9 @@ def is_tool_schema(obj: dict) -> bool:
 class BaseTool(ABC):
     name: str = ""
     description: str = ""
-    parameters: Union[List[dict], dict] = []
+    parameters: list[dict] | dict = []
 
-    def __init__(self, cfg: Optional[dict] = None):
+    def __init__(self, cfg: dict | None = None):
         self.cfg = cfg or {}
         if not self.name:
             raise ValueError(
@@ -83,8 +82,8 @@ class BaseTool(ABC):
 
     @abstractmethod
     def call(
-        self, params: Union[str, dict], **kwargs
-    ) -> Union[str, list, dict, List[ContentItem]]:
+        self, params: str | dict, **kwargs
+    ) -> str | list | dict | list[ContentItem]:
         """The interface for calling tools.
 
         Each tool needs to implement this function, which is the workflow of the tool.
@@ -99,7 +98,7 @@ class BaseTool(ABC):
         raise NotImplementedError
 
     def _verify_json_format_args(
-        self, params: Union[str, dict], strict_json: bool = False
+        self, params: str | dict, strict_json: bool = False
     ) -> dict:
         """Verify the parameters of the function call"""
         if isinstance(params, str):
@@ -114,7 +113,7 @@ class BaseTool(ABC):
             params_json: dict = params
         if isinstance(self.parameters, list):
             for param in self.parameters:
-                if "required" in param and param["required"]:
+                if param.get("required"):
                     if param["name"] not in params_json:
                         raise ValueError("Parameters %s is required!" % param["name"])
         elif isinstance(self.parameters, dict):

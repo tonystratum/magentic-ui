@@ -27,7 +27,6 @@ from magentic_ui.agents.web_surfer.fara._types import (
     LLMMessage,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -45,8 +44,9 @@ def _make_mock_env() -> AsyncMock:
 
 def _minimal_png() -> bytes:
     """A small test PNG (100x100 white)."""
-    from PIL import Image
     import io
+
+    from PIL import Image
 
     buf = io.BytesIO()
     Image.new("RGB", (100, 100), "white").save(buf, format="PNG")

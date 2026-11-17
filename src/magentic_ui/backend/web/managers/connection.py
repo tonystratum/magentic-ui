@@ -24,34 +24,32 @@ import asyncio
 import contextlib
 import json
 import traceback
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from fastapi import WebSocket, WebSocketDisconnect
-
-from ....agents.web_surfer.fara._types import StreamUpdate
 from loguru import logger
 
-from ...database import DatabaseManager
-from ...datamodel import Message, MessageConfig, Run, RunStatus
-from ...teammanager import TeamManager
-from ...utils.utils import construct_task
-
-from ....magentic_ui_config import MagenticUIConfig
 from ...._ai_client import humanize_model_error
+from ....agents.web_surfer.fara._types import StreamUpdate
 from ....approval import (
     AGENT_INPUT_SESSION_AUTO_APPROVE,
     ApprovalDecision,
     ApprovalSource,
 )
+from ....magentic_ui_config import MagenticUIConfig
 from ....sandbox._path_normalizer import extract_dir_basename
 from ....tools.playwright.browser import BrowserSlotPoolFullError
-from ._pool_full import handle_pool_full, maybe_retry_after_pool_full
+from ...database import DatabaseManager
+from ...datamodel import Message, MessageConfig, Run, RunStatus
+from ...teammanager import TeamManager
+from ...utils.utils import construct_task
 from ._continuation_response import (
     normalize_continuation_decision,
     save_continuation_response,
 )
+from ._pool_full import handle_pool_full, maybe_retry_after_pool_full
 
 if TYPE_CHECKING:
     from ....tools.playwright.browser.quicksand_browser_manager import (
@@ -76,7 +74,7 @@ _SENSITIVE_LOG_KEYS = {"password", "token", "api_key", "secret"}
 def _scrub_for_log(obj: Any) -> Any:
     """Recursively redact known-sensitive values (e.g. VNC password) for log output."""
     if isinstance(obj, dict):
-        items = cast(Dict[str, Any], obj).items()
+        items = cast(dict[str, Any], obj).items()
         return {
             k: "***REDACTED***"
             if k.lower() in _SENSITIVE_LOG_KEYS
@@ -84,7 +82,7 @@ def _scrub_for_log(obj: Any) -> Any:
             for k, v in items
         }
     if isinstance(obj, list):
-        items_list = cast(List[Any], obj)
+        items_list = cast(list[Any], obj)
         return [_scrub_for_log(item) for item in items_list]
     return obj
 
@@ -97,7 +95,7 @@ def _normalize_mount_dirs(raw: Any) -> list[str] | None:
     return [item for item in items if isinstance(item, str) and item.strip()]
 
 
-def _mounted_folder_metadata(mount_dirs: list[str] | None) -> Optional[Dict[str, str]]:
+def _mounted_folder_metadata(mount_dirs: list[str] | None) -> dict[str, str] | None:
     """Build mounted folder metadata from start-task settings."""
     folder_path = next((item for item in mount_dirs or [] if item), None)
     if folder_path is None:
@@ -109,9 +107,9 @@ def _mounted_folder_metadata(mount_dirs: list[str] | None) -> Optional[Dict[str,
 def _user_message_metadata(
     attached_files_json: str,
     mount_dirs: list[str] | None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Build metadata for saved and broadcast user messages."""
-    metadata: Dict[str, Any] = {"attached_files": attached_files_json}
+    metadata: dict[str, Any] = {"attached_files": attached_files_json}
     mounted_folder = _mounted_folder_metadata(mount_dirs)
     if mounted_folder is not None:
         metadata["mounted_folder"] = mounted_folder
@@ -153,18 +151,18 @@ class WebSocketManager:
         db_manager: DatabaseManager,
         app_dir: Path,
         config: MagenticUIConfig,
-        quicksand_manager: "QuicksandBrowserManager | None" = None,
+        quicksand_manager: QuicksandBrowserManager | None = None,
     ) -> None:
         self.db_manager = db_manager
         self.app_dir = app_dir
         self.config = config
         self._quicksand_manager = quicksand_manager
 
-        self._connections: Dict[int, List[WebSocket]] = {}
+        self._connections: dict[int, list[WebSocket]] = {}
         self._closed_connections: set[int] = set()
-        self._team_managers: Dict[int, TeamManager] = {}
-        self._stream_tasks: Dict[int, asyncio.Task[None]] = {}
-        self._grace_tasks: Dict[int, asyncio.Task[None]] = {}
+        self._team_managers: dict[int, TeamManager] = {}
+        self._stream_tasks: dict[int, asyncio.Task[None]] = {}
+        self._grace_tasks: dict[int, asyncio.Task[None]] = {}
         self._stopping_runs: set[int] = set()  # idempotency guard for stop_run
 
     async def connect(
@@ -219,8 +217,8 @@ class WebSocketManager:
         self,
         run_id: int,
         task: str,
-        files: Optional[List[Dict[str, Any]]] = None,
-        settings_config: Optional[Dict[str, Any]] = None,
+        files: list[dict[str, Any]] | None = None,
+        settings_config: dict[str, Any] | None = None,
         echo_user_message: bool = True,
     ) -> None:
         """Start streaming task execution.
@@ -245,7 +243,7 @@ class WebSocketManager:
             logger.info(f"Awaiting previous stream cleanup for run {run_id}")
             try:
                 await asyncio.wait_for(old_task, timeout=30.0)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 logger.warning(
                     f"Previous stream for run {run_id} didn't finish in 30s, "
                     "force-cancelling"
@@ -274,8 +272,8 @@ class WebSocketManager:
         self,
         run_id: int,
         task: str,
-        files: Optional[List[Dict[str, Any]]] = None,
-        settings_config: Optional[Dict[str, Any]] = None,
+        files: list[dict[str, Any]] | None = None,
+        settings_config: dict[str, Any] | None = None,
         echo_user_message: bool = True,
     ) -> None:
         """Internal: run the agent stream with full cleanup on exit.
@@ -283,7 +281,7 @@ class WebSocketManager:
         The entire body is wrapped in try/finally so that _stream_tasks
         cleanup always runs — even if the connection guard raises early.
         """
-        team_manager: Optional[TeamManager] = None
+        team_manager: TeamManager | None = None
         agent_task = task  # Task string sent to agent (may include file references)
         attached_files_json = json.dumps([])  # Metadata for DB/WS storage
         try:
@@ -407,7 +405,7 @@ class WebSocketManager:
                 logger.debug(
                     f"Received update #{update_count}: text={update.text[:100] if update.text else 'None'}"
                 )
-                props: Dict[str, Any] = update.additional_properties or {}
+                props: dict[str, Any] = update.additional_properties or {}
 
                 # Transient agent_state signal: forward to the WS and do not
                 # persist — the next persistent message clears it.
@@ -530,7 +528,7 @@ class WebSocketManager:
             if run is None or run.status == RunStatus.ACTIVE:
                 await self._update_run_status(run_id, RunStatus.COMPLETE)
 
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             # Input timeout from agent - stop the run with timeout message
             timeout_msg = (
                 str(e)
@@ -585,7 +583,7 @@ class WebSocketManager:
                         f"Error closing team manager for run {run_id} after stream end"
                     )
 
-    def _format_response_update(self, update: StreamUpdate) -> Dict[str, Any]:
+    def _format_response_update(self, update: StreamUpdate) -> dict[str, Any]:
         """Format StreamUpdate for WebSocket transmission."""
         contents: list[dict[str, Any]] = []
 
@@ -599,7 +597,7 @@ class WebSocketManager:
 
         # Handle image content from additional_properties
         # Per websocket-messages.md: { type: "image", url: "data:image/png;base64,..." }
-        if "image" in props and props["image"]:
+        if props.get("image"):
             contents.append(
                 {
                     "type": "image",
@@ -618,7 +616,7 @@ class WebSocketManager:
             },
         }
 
-    def _update_to_dict(self, update: StreamUpdate) -> Dict[str, Any]:
+    def _update_to_dict(self, update: StreamUpdate) -> dict[str, Any]:
         """Convert StreamUpdate to dict for database storage."""
         props = update.additional_properties or {}
 
@@ -626,7 +624,7 @@ class WebSocketManager:
         contents: list[dict[str, Any]] = []
         if update.text:
             contents.append({"type": "text", "text": update.text})
-        if "image" in props and props["image"]:
+        if props.get("image"):
             contents.append(
                 {
                     "type": "image",
@@ -646,18 +644,18 @@ class WebSocketManager:
             "metadata": props,
         }
 
-    async def _save_message(self, run_id: int, message_dict: Dict[str, Any]) -> None:
+    async def _save_message(self, run_id: int, message_dict: dict[str, Any]) -> None:
         """Save a message to the database; strip browser_address passwords."""
         raw_metadata = message_dict.get("metadata")
         if isinstance(raw_metadata, dict):
-            metadata = cast(Dict[str, Any], raw_metadata)
+            metadata = cast(dict[str, Any], raw_metadata)
             if metadata.get("type") == "browser_address" and "password" in metadata:
                 scrubbed = {k: v for k, v in metadata.items() if k != "password"}
                 message_dict = {**message_dict, "metadata": scrubbed}
         run = await self._get_run(run_id)
         if run:
             db_message = Message(
-                created_at=datetime.now(timezone.utc),
+                created_at=datetime.now(UTC),
                 session_id=run.session_id,
                 run_id=run_id,
                 config=message_dict,
@@ -665,13 +663,13 @@ class WebSocketManager:
             )
             self.db_manager.upsert(db_message)
 
-    async def _send_message(self, run_id: int, message: Dict[str, Any]) -> None:
+    async def _send_message(self, run_id: int, message: dict[str, Any]) -> None:
         """Send a message through WebSocket.
 
         Stamps every outgoing frame with a server-side UTC ISO timestamp so the
         frontend can render consistent times for both live and history messages.
         """
-        message["timestamp"] = datetime.now(timezone.utc).isoformat()
+        message["timestamp"] = datetime.now(UTC).isoformat()
         logger.debug(
             f"_send_message called for run {run_id}, type={message.get('type')}"
         )
@@ -765,7 +763,7 @@ class WebSocketManager:
         finally:
             self._stopping_runs.discard(run_id)
 
-    async def disconnect(self, run_id: int, ws: Optional[WebSocket] = None) -> None:
+    async def disconnect(self, run_id: int, ws: WebSocket | None = None) -> None:
         """Clean up WebSocket connection. Starts a grace period for reconnection.
 
         The stream task continues in the background, saving messages to DB.
@@ -856,13 +854,13 @@ class WebSocketManager:
         self._closed_connections.discard(run_id)
         self._grace_tasks.pop(run_id, None)
 
-    async def _get_run(self, run_id: int) -> Optional[Run]:
+    async def _get_run(self, run_id: int) -> Run | None:
         """Get run from database."""
         response = self.db_manager.get(Run, filters={"id": run_id}, return_json=False)
         return response.data[0] if response.status and response.data else None
 
     async def _update_run_status(
-        self, run_id: int, status: RunStatus, content: Optional[str] = None
+        self, run_id: int, status: RunStatus, content: str | None = None
     ) -> None:
         """Update run status in database and notify frontend.
 
@@ -894,8 +892,8 @@ class WebSocketManager:
         self,
         run_id: int,
         status: RunStatus,
-        team_result: Optional[Dict[str, Any]] = None,
-        error: Optional[str] = None,
+        team_result: dict[str, Any] | None = None,
+        error: str | None = None,
     ) -> None:
         """Update run status and result."""
         run = await self._get_run(run_id)
@@ -924,7 +922,7 @@ class WebSocketManager:
                     await asyncio.wait_for(
                         self.stop_run(run_id, "Server shutting down"), timeout=5
                     )
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     logger.warning(f"Timeout stopping run {run_id}")
                 except Exception as e:
                     logger.error(f"Error stopping run {run_id}: {e}")
