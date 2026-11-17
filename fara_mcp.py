@@ -137,7 +137,7 @@ def _report(run: Run, consume: bool = True) -> str:
 async def _send_channel(params: dict[str, Any]) -> None:
     try:
         await _outbound.notify(CHANNEL, params)
-    except Exception as e:  # noqa: BLE001  # a failed push must not fail the tool call
+    except Exception as e:  # a failed push must not fail the tool call
         print(f"fara_mcp: channel push failed ({e!r})", file=sys.stderr)
 
 
@@ -191,7 +191,7 @@ async def _listen(run: Run) -> None:
         async for raw in run.ws:
             try:
                 _handle(run, json.loads(raw))
-            except Exception as e:  # noqa: BLE001  # one odd message must not drop the connection
+            except Exception as e:  # one odd message must not drop the connection
                 print(f"fara_mcp: skipped message ({e!r}): {str(raw)[:200]}", file=sys.stderr)
     except websockets.ConnectionClosed:
         pass

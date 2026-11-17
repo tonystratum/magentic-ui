@@ -104,6 +104,10 @@ uv sync --script fara_mcp.py -q &&
 uvx ty check --python "$(uv python find --script fara_mcp.py)" fara_mcp.py
 """
 
+[tool.ruff.lint]
+# catch-and-continue at agent/browser/db boundaries is deliberate
+ignore = ["BLE001", "S110", "S112"]
+
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["fastapi.Depends", "fastapi.File"]
 

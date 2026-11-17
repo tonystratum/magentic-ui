@@ -36,7 +36,8 @@ def _validate_tool_definition(tool_def: dict[str, Any]) -> None:
     """Check the tool schema is well-formed enough for dispatch."""
     raw_fn = tool_def.get("function")
     if not isinstance(raw_fn, dict):
-        raise ValueError("tool_definition must have a 'function' dict")
+        # every malformed tool_definition raises ValueError, so callers catch one type
+        raise ValueError("tool_definition must have a 'function' dict")  # noqa: TRY004
     fn = cast(dict[str, Any], raw_fn)
     name = fn.get("name")
     if not isinstance(name, str) or not name:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import subprocess
 from pathlib import Path
 from typing import Self
@@ -51,15 +52,18 @@ class NullSandbox(LocalSandboxBase):
         extra_env: dict[str, str] | None = None,
     ) -> ExecuteResult:
         """Run cmd directly on the host."""
-        result = subprocess.run(
-            cmd,
-            shell=True,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            cwd=cwd,
-            env=self._activated_env(extra_env),
+        env = self._activated_env(extra_env)
+        result = await asyncio.to_thread(
+            lambda: subprocess.run(
+                cmd,
+                shell=True,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                cwd=cwd,
+                env=env,
+            )
         )
         return ExecuteResult(
             stdout=result.stdout,

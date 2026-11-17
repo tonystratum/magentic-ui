@@ -119,7 +119,7 @@ class BaseTool(ABC):
 
             jsonschema.validate(instance=params_json, schema=self.parameters)
         else:
-            raise ValueError
+            raise TypeError(f"{type(self).__name__}.parameters must be a list or dict")
         return params_json
 
     @property

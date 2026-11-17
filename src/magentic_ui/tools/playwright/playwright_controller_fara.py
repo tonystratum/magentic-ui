@@ -137,6 +137,10 @@ def handle_target_closed(max_retries: int = 2, timeout_secs: int = 30):
     return decorator
 
 
+class PageRecoveryError(RuntimeError):
+    """Raised when a closed page could not be reloaded or re-navigated."""
+
+
 async def _recover_page(page: Page, timeout_secs: int = 30, logger=None) -> None:
     """
     Attempt to recover a closed page by reloading it.
@@ -180,13 +184,13 @@ async def _recover_page(page: Page, timeout_secs: int = 30, logger=None) -> None
                     "playwright_controller._recover_page(): Page recovery via goto successful"
                 )
             else:
-                raise Exception(
+                raise PageRecoveryError(
                     "playwright_controller._recover_page(): No valid URL to navigate to"
                 )
         except Exception as goto_error:
-            raise Exception(
+            raise PageRecoveryError(
                 f"playwright_controller._recover_page(): All recovery methods failed. Reload error: {e}, Goto error: {goto_error}"
-            )
+            ) from goto_error
 
 
 # Enhanced version that can handle browser context recreation

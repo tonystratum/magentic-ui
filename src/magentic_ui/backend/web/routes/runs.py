@@ -1,4 +1,5 @@
 # /api/runs routes
+import asyncio
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
@@ -138,9 +139,8 @@ async def upload_files(
         file_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Write the file
-        with open(file_path, "wb") as buffer:
-            content = await file.read()
-            buffer.write(content)
+        content = await file.read()
+        await asyncio.to_thread(file_path.write_bytes, content)
 
         uploaded_files.append(
             {

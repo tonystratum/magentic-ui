@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import os
 import shutil
 import subprocess
@@ -37,9 +38,12 @@ class LocalSandboxBase(SandboxBase):
             shutil.rmtree(self._venv, ignore_errors=True)
         self._venv.parent.mkdir(parents=True, exist_ok=True)
         if not self._venv.exists():
-            subprocess.run(["python3", "-m", "venv", str(self._venv)], check=True)
+            await asyncio.to_thread(
+                subprocess.run, ["python3", "-m", "venv", str(self._venv)], check=True
+            )
             if not self._bash_only and _SANDBOX_REQUIREMENTS.exists():
-                subprocess.run(
+                await asyncio.to_thread(
+                    subprocess.run,
                     [
                         str(self._venv / "bin" / "pip"),
                         "install",
