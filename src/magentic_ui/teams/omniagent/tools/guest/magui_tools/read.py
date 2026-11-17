@@ -27,6 +27,7 @@ def _detect_mime(file_path: str) -> str:
         result = subprocess.run(
             ["file", "-b", "--mime-type", file_path],
             capture_output=True,
+            check=False,
             text=True,
             timeout=5,
         )

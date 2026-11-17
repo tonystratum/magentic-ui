@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 
 from loguru import logger
 from quicksand import Sandbox as QuicksandVM  # type: ignore[import-untyped]
@@ -80,7 +80,7 @@ class QuicksandSandbox(SandboxBase):
     # Lifecycle (matching harness pattern)
     # ------------------------------------------------------------------
 
-    async def __aenter__(self) -> QuicksandSandbox:
+    async def __aenter__(self) -> Self:
         logger.info("Starting Quicksand VM...")
         logger.info(
             f"VM config: memory={self._memory}, cpus={self._cpus}, "

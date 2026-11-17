@@ -41,6 +41,7 @@ def get_home() -> Path:
             result = subprocess.run(
                 ["cmd.exe", "/c", "echo", "%USERPROFILE%"],
                 capture_output=True,
+                check=False,
                 text=True,
                 timeout=5,
             )
@@ -49,6 +50,7 @@ def get_home() -> Path:
                 wsl_result = subprocess.run(
                     ["wslpath", "-u", win_path],
                     capture_output=True,
+                    check=False,
                     text=True,
                     timeout=5,
                 )
@@ -98,6 +100,7 @@ def normalize_host_path(path: str) -> str:
         result = subprocess.run(
             ["wslpath", "-u", path],
             capture_output=True,
+            check=False,
             text=True,
             timeout=5,
         )

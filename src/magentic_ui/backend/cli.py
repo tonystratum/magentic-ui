@@ -271,7 +271,7 @@ def help():
 
     # Run the command with --help
     try:
-        subprocess.run([command, "--help"])
+        subprocess.run([command, "--help"], check=False)
     except FileNotFoundError:
         # Fallback if the command isn't found in PATH
         typer.echo(f"Error: Command '{command}' not found in PATH.")

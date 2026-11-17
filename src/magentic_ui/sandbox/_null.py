@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import subprocess
 from pathlib import Path
+from typing import Self
 
 from . import ExecuteResult, Mount
 from ._local import LocalSandboxBase
@@ -32,7 +33,7 @@ class NullSandbox(LocalSandboxBase):
         # Without a VM mount, point the agent shell at the host source dir.
         self.guest_tools_dir: str = str(_GUEST_TOOLS_HOST_DIR.resolve())
 
-    async def __aenter__(self) -> NullSandbox:
+    async def __aenter__(self) -> Self:
         await super().__aenter__()
         # Identity mounts: to_guest_path() returns the real host path.
         self._mounts = [Mount(self._workspace, self._workspace)]
@@ -53,6 +54,7 @@ class NullSandbox(LocalSandboxBase):
         result = subprocess.run(
             cmd,
             shell=True,
+            check=False,
             capture_output=True,
             text=True,
             timeout=timeout,

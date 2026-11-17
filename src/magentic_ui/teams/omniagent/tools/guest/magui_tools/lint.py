@@ -48,6 +48,7 @@ def run_flake8(file_path: str) -> list[LintError]:
         result = subprocess.run(
             [*_FLAKE8_ARGS, "--", file_path],
             capture_output=True,
+            check=False,
             text=True,
             timeout=10,
         )

@@ -2,6 +2,7 @@ import json
 
 import pytest
 import yaml
+from pydantic import ValidationError
 
 from magentic_ui.magentic_ui_config import MagenticUIConfig
 
@@ -208,11 +209,11 @@ harness_config:
 
 def test_web_surfer_max_rounds_validation_bounds() -> None:
     """``max_rounds`` is constrained to [1, 1000]; out-of-range raises."""
-    with pytest.raises(Exception):  # pydantic ValidationError
+    with pytest.raises(ValidationError):
         MagenticUIConfig(
             **yaml.safe_load("harness_config:\n  web_surfer:\n    max_rounds: 0\n")
         )
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         MagenticUIConfig(
             **yaml.safe_load("harness_config:\n  web_surfer:\n    max_rounds: 1001\n")
         )
@@ -251,11 +252,11 @@ harness_config:
 
 def test_orchestrator_max_rounds_validation_bounds() -> None:
     """``max_rounds`` is constrained to [1, 1000]; out-of-range raises."""
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         MagenticUIConfig(
             **yaml.safe_load("harness_config:\n  orchestrator:\n    max_rounds: 0\n")
         )
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         MagenticUIConfig(
             **yaml.safe_load("harness_config:\n  orchestrator:\n    max_rounds: 1001\n")
         )

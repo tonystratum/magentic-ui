@@ -6,6 +6,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
+from typing import Self
 
 from . import SandboxBase
 
@@ -30,7 +31,7 @@ class LocalSandboxBase(SandboxBase):
         self._bash_only = bash_only
         self._venv: Path | None = None
 
-    async def __aenter__(self) -> LocalSandboxBase:
+    async def __aenter__(self) -> Self:
         self._venv = self._agent_home / "sandbox" / "venv"
         if self._reset:
             shutil.rmtree(self._venv, ignore_errors=True)

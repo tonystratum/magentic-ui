@@ -391,7 +391,7 @@ I'll click login.
         assert action["arguments"]["action"] == "click"
 
     def test_parse_missing_tool_call_raises(self, agent):
-        with pytest.raises(Exception):
+        with pytest.raises(IndexError):
             agent._parse_thoughts_and_action("No tool call here")
 
 

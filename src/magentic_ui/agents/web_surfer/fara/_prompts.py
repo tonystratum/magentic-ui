@@ -35,7 +35,7 @@ Use a mouse and keyboard to interact with a computer, and take screenshots.
 * For calendar widgets, you usually need to left_click() on arrows to move between months and left_click() on dates to select them; type() is not typically used to input dates there.
 """.strip()
 
-    parameters = {
+    parameters = {  # noqa: RUF012  # __init__ deep-copies it per instance
         "properties": {
             "action": {
                 "description": """
@@ -209,7 +209,7 @@ Use a mouse and keyboard to interact with a computer, and take screenshots.
 * Make sure to click any buttons, links, icons, etc with the cursor tip in the center of the element. Don't click boxes on their edges.
 """.strip()
 
-    parameters = {
+    parameters = {  # noqa: RUF012  # __init__ deep-copies it per instance
         "properties": {
             "action": {
                 "description": """

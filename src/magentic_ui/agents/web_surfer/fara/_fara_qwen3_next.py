@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-from typing import Any
+from typing import Any, ClassVar
 
 from loguru import logger
 from PIL import Image
@@ -18,7 +18,7 @@ class FaraQwen3NextAgentConfig(FaraQwen3AgentConfig):
     """Configuration for FaraQwen3NextAgent."""
 
     name: str = "fara_next"
-    tools: list[str] = ["BROWSER_TOOLS_CORE"]
+    tools: list[str] = ["BROWSER_TOOLS_CORE"]  # noqa: RUF012  # pydantic copies field defaults
     max_observation_chars: int = 1000
 
 
@@ -33,7 +33,7 @@ class FaraQwen3NextAgent(FaraQwen3Agent):
     """
 
     # Tool set to mode mapping
-    TOOL_SET_TO_MODE = {
+    TOOL_SET_TO_MODE: ClassVar[dict[str, str]] = {
         "BROWSER_TOOLS_CORE": "fara_next_browser",
         "BROWSER_TOOLS_WITH_READ_PAGE": "fara_next_browser",
     }

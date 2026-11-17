@@ -60,7 +60,7 @@ def is_tool_schema(obj: dict) -> bool:
 class BaseTool(ABC):
     name: str = ""
     description: str = ""
-    parameters: list[dict] | dict = []
+    parameters: list[dict] | dict = []  # noqa: RUF012  # subclasses replace it, never mutate it
 
     def __init__(self, cfg: dict | None = None):
         self.cfg = cfg or {}

@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol
+from typing import Protocol, Self
 
 
 @dataclass
@@ -35,7 +35,7 @@ class Sandbox(Protocol):
     # host source directory directly.
     guest_tools_dir: str
 
-    async def __aenter__(self) -> Sandbox:
+    async def __aenter__(self) -> Self:
         """Enter the sandbox context."""
         ...
 
@@ -71,7 +71,7 @@ class SandboxBase:
         self._mounts: list[Mount] = []
         self._mounts_lock = asyncio.Lock()
 
-    async def __aenter__(self) -> SandboxBase:
+    async def __aenter__(self) -> Self:
         """Enter the sandbox context."""
         return self
 
