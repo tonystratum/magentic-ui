@@ -112,11 +112,12 @@ def _log(run: Run) -> None:
         f.write(json.dumps(rec) + "\n")
 
 
-def _report(run: Run) -> str:
-    """Status, steps not yet reported, pending question, answer; marks the steps as reported."""
+def _report(run: Run, consume: bool = True) -> str:
+    """Status, steps not yet reported, pending question, answer; consume marks the steps as reported."""
     out = [f"session {run.session_id}: {run.status} ({len(run.steps)} steps, {time.time() - run.started:.0f}s)"]
     new = run.steps[run.seen:]
-    run.seen = len(run.steps)
+    if consume:
+        run.seen = len(run.steps)
     if new:
         out += ["steps:"] + new
     if run.pending:
@@ -141,7 +142,8 @@ async def _send_channel(params: dict[str, Any]) -> None:
 def _push(run: Run) -> None:
     """Report to Claude Code unprompted. Dropped silently by Claude Code unless loaded as a channel."""
     if _outbound is not None:
-        params = {"content": _report(run), "meta": {"session_id": str(run.session_id), "status": run.status}}
+        # Don't consume: without the channel flag Claude Code drops this, and fara_status must still show the steps.
+        params = {"content": _report(run, consume=False), "meta": {"session_id": str(run.session_id), "status": run.status}}
         asyncio.create_task(_send_channel(params))
 
 

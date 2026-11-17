@@ -160,7 +160,7 @@ class WebSocketManager:
         self.config = config
         self._quicksand_manager = quicksand_manager
 
-        self._connections: Dict[int, WebSocket] = {}
+        self._connections: Dict[int, List[WebSocket]] = {}
         self._closed_connections: set[int] = set()
         self._team_managers: Dict[int, TeamManager] = {}
         self._stream_tasks: Dict[int, asyncio.Task[None]] = {}
@@ -176,7 +176,7 @@ class WebSocketManager:
         """Accept WebSocket connection, optionally echoing an agreed subprotocol."""
         try:
             await websocket.accept(subprotocol=subprotocol)
-            self._connections[run_id] = websocket
+            self._connections.setdefault(run_id, []).append(websocket)
             self._closed_connections.discard(run_id)
             # Cancel grace period — client reconnected
             old_task = self._grace_tasks.pop(run_id, None)
@@ -679,19 +679,17 @@ class WebSocketManager:
             logger.warning(f"Attempted to send to closed connection: run {run_id}")
             return
 
-        try:
-            if run_id in self._connections:
-                websocket = self._connections[run_id]
+        # Every attached client (UI tabs, fara_mcp) gets every frame.
+        for websocket in list(self._connections.get(run_id, [])):
+            try:
                 logger.debug(f"Sending via websocket: {message.get('type')}")
                 await websocket.send_json(message)
-        except WebSocketDisconnect:
-            logger.warning(f"WebSocket disconnected during send for run {run_id}")
-            self._closed_connections.add(run_id)
-            self._connections.pop(run_id, None)
-        except Exception as e:
-            logger.error(f"WebSocket send error for run {run_id}: {e}")
-            self._closed_connections.add(run_id)
-            self._connections.pop(run_id, None)
+            except WebSocketDisconnect:
+                logger.warning(f"WebSocket disconnected during send for run {run_id}")
+                self._drop_socket(run_id, websocket)
+            except Exception as e:
+                logger.error(f"WebSocket send error for run {run_id}: {e}")
+                self._drop_socket(run_id, websocket)
 
     async def _handle_stream_error(self, run_id: int, error: Exception) -> None:
         """Handle stream errors and persist error detail as a Message record."""
@@ -775,24 +773,34 @@ class WebSocketManager:
         When a new WS connects via connect(), _closed_connections is cleared
         and messages resume flowing to the frontend.
         """
-        # Stale disconnect guard: if connect() already replaced the WS,
+        # Stale disconnect guard: if _send_message() already dropped this WS,
         # don't touch connections — but still ensure a grace period runs
-        # in case _send_message() already marked this run as closed.
-        if ws is not None and self._connections.get(run_id) is not ws:
+        # in case that left the run with no socket.
+        sockets = self._connections.get(run_id, [])
+        if ws is not None and not any(s is ws for s in sockets):
             logger.info(f"Stale disconnect for run {run_id}, skipping WS cleanup")
             if run_id in self._closed_connections:
                 self._start_grace_period(run_id)
             return
 
         logger.info(f"Disconnecting WS for run {run_id}")
-        self._closed_connections.add(run_id)
-
-        # Remove WS reference (re-check identity to handle race)
-        if ws is None or self._connections.get(run_id) is ws:
-            self._connections.pop(run_id, None)
+        for s in list(sockets) if ws is None else [ws]:
+            self._drop_socket(run_id, s)
+        if run_id not in self._closed_connections:
+            return  # Other clients (UI tab, MCP) are still attached
 
         # Start grace period — stop the run if no reconnect within timeout
         self._start_grace_period(run_id)
+
+    def _drop_socket(self, run_id: int, ws: WebSocket) -> None:
+        """Detach one WS; the run counts as closed once its last WS is gone."""
+        # Identity, not ==: Starlette's WebSocket is a Mapping with value equality.
+        remaining = [s for s in self._connections.get(run_id, []) if s is not ws]
+        if remaining:
+            self._connections[run_id] = remaining
+        else:
+            self._connections.pop(run_id, None)
+            self._closed_connections.add(run_id)
 
     def _start_grace_period(self, run_id: int) -> None:
         """Cancel any existing grace task for this run and start a new one."""

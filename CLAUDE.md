@@ -5,7 +5,7 @@ Fork of microsoft/magentic-ui (MagenticLite 0.2.x). This fork adds Claude Code o
 ## Layout
 
 - `fara_mcp.py` — the MCP server this fork adds (PEP 723 script, run with `uv run --script`).
-- Upstream code under `src/`, `frontend/` and `docs/` is unchanged except for the noVNC relay: `src/magentic_ui/backend/web/routes/ws.py` (`/api/ws/novnc/{port}`), `frontend/src/lib/utils.ts` (`buildNovncUrl`) and `frontend/src/components/browser/BrowserViewer.tsx` (`wsProtocols`). Keep further changes out of upstream code unless unavoidable, so rebasing stays easy.
+- Upstream code under `src/`, `frontend/` and `docs/` is unchanged except for the noVNC relay (`src/magentic_ui/backend/web/routes/ws.py` `/api/ws/novnc/{port}`, `frontend/src/lib/utils.ts` `buildNovncUrl`, `frontend/src/components/browser/BrowserViewer.tsx` `wsProtocols`) and the per-run websocket fan-out (`src/magentic_ui/backend/web/managers/connection.py`, test `tests/test_ws_fanout.py`). Keep further changes out of upstream code unless unavoidable, so rebasing stays easy.
 - `.venv` — the fork installed editable (`uv sync`). The frontend is built into `src/magentic_ui/backend/web/ui/` (gitignored) with `cd frontend && pnpm install --frozen-lockfile && pnpm build`; rebuild after frontend changes.
 - `config.yaml` (gitignored) — `web_surfer` → llama.cpp `:8001` (Fara1.5-4B), `agent_mode: websurfer_only`.
 - `runs/fara.jsonl` (gitignored) — one line per finished Fara task, appended by `fara_mcp.py`.
