@@ -22,16 +22,28 @@ from typing import Any
 
 import httpx
 import websockets
-from mcp.server.mcpserver import MCPServer
+from mcp.server.mcpserver import Context, MCPServer
+from mcp.server.stdio import stdio_server
 
 BASE = os.environ.get("FARA_UI_URL", "http://127.0.0.1:8081").rstrip("/")
 USER_ID = "guestuser@gmail.com"  # frontend's DEFAULT_USER_ID, so runs show in the UI
 WS_PROTOCOL_TAG = "magui.auth.bearer"
 LOG = Path(__file__).resolve().parent / "runs" / "fara.jsonl"
 DONE = {"complete", "error", "stopped", "disconnected"}
+CHANNEL = "notifications/claude/channel"
 
-mcp = MCPServer("fara")
+mcp = MCPServer(
+    "fara",
+    instructions=(
+        'When loaded as a channel, Fara reports back on its own: a <channel source="fara" '
+        'session_id=".." status=".."> event arrives when a task finishes (complete/error/stopped/'
+        "disconnected) or when Fara asks a question (awaiting_input). The body is the same report "
+        "fara_status returns. Relay Fara's questions to the user and answer with fara_respond; "
+        "do not poll fara_status while waiting for these events."
+    ),
+)
 _token: str | None = None
+_outbound: Any = None  # connection-scoped channel to Claude Code, captured on the first tool call
 
 
 @dataclass
@@ -100,11 +112,45 @@ def _log(run: Run) -> None:
         f.write(json.dumps(rec) + "\n")
 
 
+def _report(run: Run) -> str:
+    """Status, steps not yet reported, pending question, answer; marks the steps as reported."""
+    out = [f"session {run.session_id}: {run.status} ({len(run.steps)} steps, {time.time() - run.started:.0f}s)"]
+    new = run.steps[run.seen:]
+    run.seen = len(run.steps)
+    if new:
+        out += ["steps:"] + new
+    if run.pending:
+        p = run.pending
+        out.append(f"FARA ASKS ({p.get('input_type', 'text_input')}): {p.get('content', '')}")
+        if p.get("tool"):
+            out.append(f"  action: {p['tool']} {json.dumps(p.get('tool_args'))}")
+    if run.answer:
+        out.append(f"answer: {run.answer}")
+    if run.error:
+        out.append(f"error: {run.error}")
+    return "\n".join(out)
+
+
+async def _send_channel(params: dict[str, Any]) -> None:
+    try:
+        await _outbound.notify(CHANNEL, params)
+    except Exception as e:
+        print(f"fara_mcp: channel push failed ({e!r})", file=sys.stderr)
+
+
+def _push(run: Run) -> None:
+    """Report to Claude Code unprompted. Dropped silently by Claude Code unless loaded as a channel."""
+    if _outbound is not None:
+        params = {"content": _report(run), "meta": {"session_id": str(run.session_id), "status": run.status}}
+        asyncio.create_task(_send_channel(params))
+
+
 def _set_status(run: Run, status: str) -> None:
     was_done = run.status in DONE
     run.status = status
     if status in DONE and not was_done and run.task:
         _log(run)
+        _push(run)
     run.changed.set()
 
 
@@ -117,6 +163,7 @@ def _handle(run: Run, msg: dict[str, Any]) -> None:
     elif kind == "input_request":
         run.pending = {k: msg[k] for k in ("input_type", "content", "tool", "tool_args", "reason") if k in msg}
         _set_status(run, "awaiting_input")
+        _push(run)
     elif kind == "message":
         data = msg.get("data", {})
         mtype = data.get("metadata", {}).get("type")
@@ -156,15 +203,19 @@ async def _connect(run: Run) -> None:
 
 
 @mcp.tool()
-async def fara_start(task: str, session_id: int | None = None) -> str:
+async def fara_start(ctx: Context, task: str, session_id: int | None = None) -> str:
     """Give Fara (a small local browser agent) one web task; returns immediately.
 
     Fara sees screenshots and clicks/types in a sandboxed Chromium. Write the task
     as concrete steps with a clear stop condition ("... then answer once done").
     Pass session_id to continue in the same browser session (follow-up task);
     omit it for a fresh session. Several sessions may run in parallel (5 browser slots).
-    Then poll with fara_status(session_id, wait_seconds=...).
+    If this server is loaded as a channel, the result arrives as a <channel source="fara"> event;
+    otherwise poll with fara_status(session_id, wait_seconds=...).
     """
+    global _outbound
+    # The SDK exposes no public handle for unsolicited notifications outside a request.
+    _outbound = ctx.session._connection.outbound
     if session_id is None:
         sess = await _api("POST", "/sessions/", {"user_id": USER_ID, "name": task[:80]})
         session_id = sess["data"]["id"]
@@ -207,21 +258,7 @@ async def fara_status(session_id: int | None = None, wait_seconds: int = 0) -> s
             await asyncio.wait_for(run.changed.wait(), deadline - time.time())
         except asyncio.TimeoutError:
             break
-    out = [f"session {session_id}: {run.status} ({len(run.steps)} steps, {time.time() - run.started:.0f}s)"]
-    new = run.steps[run.seen:]
-    run.seen = len(run.steps)
-    if new:
-        out += ["steps:"] + new
-    if run.pending:
-        p = run.pending
-        out.append(f"FARA ASKS ({p.get('input_type', 'text_input')}): {p.get('content', '')}")
-        if p.get("tool"):
-            out.append(f"  action: {p['tool']} {json.dumps(p.get('tool_args'))}")
-    if run.answer:
-        out.append(f"answer: {run.answer}")
-    if run.error:
-        out.append(f"error: {run.error}")
-    return "\n".join(out)
+    return _report(run)
 
 
 @mcp.tool()
@@ -262,5 +299,14 @@ async def fara_stop(session_id: int) -> str:
     return f"stop sent to session {session_id}"
 
 
+async def _main() -> None:
+    # mcp.run() offers no way to add experimental capabilities; declare claude/channel here.
+    server = mcp._lowlevel_server
+    async with stdio_server() as (read, write):
+        await server.run(
+            read, write, server.create_initialization_options(experimental_capabilities={"claude/channel": {}})
+        )
+
+
 if __name__ == "__main__":
-    mcp.run()
+    asyncio.run(_main())

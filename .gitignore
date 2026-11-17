@@ -9,7 +9,6 @@ config/
 
 # AI assistant local docs
 .claude/
-CLAUDE.md
 .copilot/
 .github/copilot-instructions.md
 .github/frontend/
