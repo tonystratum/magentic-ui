@@ -33,5 +33,5 @@ The MCP server is registered with local scope: `claude mcp add fara -- uv run --
 - Use the latest package versions, with no upper bounds. Port code to new major APIs instead of pinning (mcp 2.x: `mcp.server.mcpserver.MCPServer`).
 - Channel push uses two private SDK attributes (`mcp._lowlevel_server`, `ctx.session._connection.outbound`). Re-check both after upgrading `mcp`.
 - Verify changes end to end against the running backend with a stdio client in a scratch directory (start a task, check the status/push and the log line). There are no unit tests for `fara_mcp.py`.
-- Lint/format/type-check it with `.venv/bin/poe fara-check` (latest ruff at 120 cols, then ty against the script's PEP 723 env).
+- Lint/format/type-check it with `.venv/bin/poe fara-check` (latest ruff, then ty against the script's PEP 723 env).
 - Repo checks: `.venv/bin/poe check` (ruff format, ruff lint, ty over `src`, `fara-check`, `frontend-check` = ESLint + Prettier + tsc in `frontend/`, pytest). ruff and ty are unpinned; `uv lock --upgrade-package ruff --upgrade-package ty` picks up new releases.

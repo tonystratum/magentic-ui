@@ -98,8 +98,8 @@ frontend-check.shell = "cd frontend && pnpm -s lint && pnpm -s format:check && p
 # fork's MCP server: latest ruff + ty, type-checked against its own PEP 723 env
 fara-check.executor.type = "simple"  # poe's default uv executor relocks uv.lock
 fara-check.shell = """
-uvx ruff format --line-length 120 fara_mcp.py &&
-uvx ruff check --fix --line-length 120 fara_mcp.py &&
+uvx ruff format fara_mcp.py &&
+uvx ruff check --fix fara_mcp.py &&
 uv sync --script fara_mcp.py -q &&
 uvx ty check --python "$(uv python find --script fara_mcp.py)" fara_mcp.py
 """

@@ -45,7 +45,9 @@ mcp = MCPServer(
     ),
 )
 _token: str | None = None
-_outbound: Any = None  # connection-scoped channel to Claude Code, captured on the first tool call
+_outbound: Any = (
+    None  # connection-scoped channel to Claude Code, captured on the first tool call
+)
 
 
 @dataclass
@@ -75,12 +77,16 @@ async def _get_token(refresh: bool = False) -> str:
             html = (await c.get(BASE + "/")).text
         m = re.search(r'__MAGUI_TOKEN__="([^"]+)"', html)
         if not m:
-            raise RuntimeError(f"No session token at {BASE}/ - is MagenticLite running?")
+            raise RuntimeError(
+                f"No session token at {BASE}/ - is MagenticLite running?"
+            )
         _token = m.group(1)
     return _token
 
 
-async def _api(method: str, path: str, body: dict[str, Any] | None = None) -> dict[str, Any]:
+async def _api(
+    method: str, path: str, body: dict[str, Any] | None = None
+) -> dict[str, Any]:
     for refresh in (False, True):
         headers = {"Authorization": f"Bearer {await _get_token(refresh)}"}
         async with httpx.AsyncClient(timeout=30) as c:
@@ -93,9 +99,13 @@ async def _api(method: str, path: str, body: dict[str, Any] | None = None) -> di
 
 def _text(data: dict[str, Any]) -> str:
     content = data.get("content", [])
-    if isinstance(content, str):  # user echoes and some system messages carry a plain string
+    if isinstance(
+        content, str
+    ):  # user echoes and some system messages carry a plain string
         return content
-    return "\n".join(c["text"] for c in content if isinstance(c, dict) and c.get("type") == "text")
+    return "\n".join(
+        c["text"] for c in content if isinstance(c, dict) and c.get("type") == "text"
+    )
 
 
 def _log(run: Run) -> None:
@@ -116,7 +126,9 @@ def _log(run: Run) -> None:
 
 def _report(run: Run, consume: bool = True) -> str:
     """Status, steps not yet reported, pending question, answer; consume marks the steps as reported."""
-    out = [f"session {run.session_id}: {run.status} ({len(run.steps)} steps, {time.time() - run.started:.0f}s)"]
+    out = [
+        f"session {run.session_id}: {run.status} ({len(run.steps)} steps, {time.time() - run.started:.0f}s)"
+    ]
     new = run.steps[run.seen :]
     if consume:
         run.seen = len(run.steps)
@@ -124,7 +136,9 @@ def _report(run: Run, consume: bool = True) -> str:
         out += ["steps:"] + new
     if run.pending:
         p = run.pending
-        out.append(f"FARA ASKS ({p.get('input_type', 'text_input')}): {p.get('content', '')}")
+        out.append(
+            f"FARA ASKS ({p.get('input_type', 'text_input')}): {p.get('content', '')}"
+        )
         if p.get("tool"):
             out.append(f"  action: {p['tool']} {json.dumps(p.get('tool_args'))}")
     if run.answer:
@@ -168,7 +182,11 @@ def _handle(run: Run, msg: dict[str, Any]) -> None:
             run.error = msg["content"]
         _set_status(run, msg.get("status", run.status))
     elif kind == "input_request":
-        run.pending = {k: msg[k] for k in ("input_type", "content", "tool", "tool_args", "reason") if k in msg}
+        run.pending = {
+            k: msg[k]
+            for k in ("input_type", "content", "tool", "tool_args", "reason")
+            if k in msg
+        }
         _set_status(run, "awaiting_input")
         _push(run)
     elif kind == "message":
@@ -192,7 +210,10 @@ async def _listen(run: Run) -> None:
             try:
                 _handle(run, json.loads(raw))
             except Exception as e:  # one odd message must not drop the connection
-                print(f"fara_mcp: skipped message ({e!r}): {str(raw)[:200]}", file=sys.stderr)
+                print(
+                    f"fara_mcp: skipped message ({e!r}): {str(raw)[:200]}",
+                    file=sys.stderr,
+                )
     except websockets.ConnectionClosed:
         pass
     finally:
@@ -203,10 +224,18 @@ async def _listen(run: Run) -> None:
 
 async def _connect(run: Run) -> None:
     url = BASE.replace("http", "ws", 1) + f"/api/ws/runs/{run.run_id}"
-    for refresh in (False, True):  # a restarted backend has a new token and refuses the old one with 403
+    for refresh in (
+        False,
+        True,
+    ):  # a restarted backend has a new token and refuses the old one with 403
         try:
             run.ws = await websockets.connect(
-                url, subprotocols=[Subprotocol(WS_PROTOCOL_TAG), Subprotocol(await _get_token(refresh))], max_size=None
+                url,
+                subprotocols=[
+                    Subprotocol(WS_PROTOCOL_TAG),
+                    Subprotocol(await _get_token(refresh)),
+                ],
+                max_size=None,
             )
             break
         except websockets.InvalidStatus:
@@ -236,7 +265,9 @@ async def fara_start(ctx: Context, task: str, session_id: int | None = None) -> 
         return f"session {session_id} is busy (status {run.status}); use fara_status / fara_respond / fara_stop"
     if run is None:
         r = await _api("POST", "/runs/", {"session_id": session_id, "user_id": USER_ID})
-        run = RUNS[session_id] = Run(session_id=session_id, run_id=int(r["data"]["run_id"]))
+        run = RUNS[session_id] = Run(
+            session_id=session_id, run_id=int(r["data"]["run_id"])
+        )
     if run.ws is None:
         await _connect(run)
         # A dropped socket or an earlier MCP process can leave a task running that this process doesn't know;
@@ -244,12 +275,22 @@ async def fara_start(ctx: Context, task: str, session_id: int | None = None) -> 
         backend_status = (await _api("GET", f"/runs/{run.run_id}"))["data"]["status"]
         if backend_status in BUSY:
             run.status = backend_status
-            run.started = run.started or time.time()  # adopted run: time since we attached
+            run.started = (
+                run.started or time.time()
+            )  # adopted run: time since we attached
             return f"session {session_id} is still running an earlier task (status {backend_status}); follow it with fara_status"
     run.task, run.answer, run.pending, run.error = task, None, None, None
     run.steps, run.seen, run.started = [], 0, time.time()
     run.status = "starting"
-    await run.ws.send(json.dumps({"type": "start", "task": json.dumps({"content": task}), "settings_config": {}}))
+    await run.ws.send(
+        json.dumps(
+            {
+                "type": "start",
+                "task": json.dumps({"content": task}),
+                "settings_config": {},
+            }
+        )
+    )
     return f"started session_id={session_id} (run {run.run_id}); UI: {BASE}"
 
 
@@ -264,7 +305,9 @@ async def fara_status(session_id: int | None = None, wait_seconds: int = 0) -> s
     if session_id is None:
         if not RUNS:
             return "no sessions"
-        return "\n".join(f"session {r.session_id}: {r.status} - {r.task[:80]}" for r in RUNS.values())
+        return "\n".join(
+            f"session {r.session_id}: {r.status} - {r.task[:80]}" for r in RUNS.values()
+        )
     run = RUNS.get(session_id)
     if run is None:
         return f"unknown session {session_id}"
@@ -322,7 +365,11 @@ async def _main() -> None:
     server = mcp._lowlevel_server
     async with stdio_server() as (read, write):
         await server.run(
-            read, write, server.create_initialization_options(experimental_capabilities={"claude/channel": {}})
+            read,
+            write,
+            server.create_initialization_options(
+                experimental_capabilities={"claude/channel": {}}
+            ),
         )
 
 
